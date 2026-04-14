@@ -2,7 +2,7 @@
 # for_each pattern + common labels. No explicit depends_on.
 
 resource "random_password" "grafana" {
-  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_monitoring ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   length  = 16
@@ -10,7 +10,7 @@ resource "random_password" "grafana" {
 }
 
 resource "helm_release" "monitoring" {
-  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_monitoring ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   name             = "kube-prometheus-stack"
@@ -83,7 +83,7 @@ resource "helm_release" "monitoring" {
 
 # Additional Traefik-specific Ingress for Grafana (using kubernetes_ingress_v1 for compatibility)
 resource "kubernetes_ingress_v1" "grafana" {
-  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_monitoring ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   metadata {

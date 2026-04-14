@@ -2,7 +2,7 @@
 # Using for_each pattern instead of count for modern Terraform standards
 
 resource "helm_release" "traefik" {
-  for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_traefik ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   name             = "traefik"
@@ -54,7 +54,7 @@ resource "helm_release" "traefik" {
 
 # Traefik Dashboard (IngressRoute)
 resource "kubernetes_manifest" "traefik_dashboard" {
-  for_each = var.enable_traefik && var.enable_traefik_dashboard ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_traefik && var.enable_traefik_dashboard ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   manifest = {
@@ -81,7 +81,7 @@ resource "kubernetes_manifest" "traefik_dashboard" {
 
 # Explicit IngressClass
 resource "kubernetes_ingress_class_v1" "traefik" {
-  for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_traefik ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   metadata {
