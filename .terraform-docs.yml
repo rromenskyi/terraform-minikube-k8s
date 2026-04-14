@@ -3,45 +3,21 @@ formatter: markdown
 output:
   file: README.md
   mode: inject
-  template: |-
-    {{ .Header }}
-
-    {{ .Content }}
-
-    {{ .Inputs }}
-
-    {{ .Outputs }}
-
-    {{ .Footer }}
 sort:
   enabled: true
   by: name
 settings:
   anchor: true
-  color: true
+  color: false
   default: true
   description: true
   escape: true
   hide: []
-  html: true
+  html: false
   indent: 2
   required: true
   sensitive: true
   type: true
-sections:
-  show:
-    - header
-    - content
-    - inputs
-    - outputs
-    - footer
-  hide: []
-  order:
-    - header
-    - content
-    - inputs
-    - outputs
-    - footer
 footer: |
   ---
 
@@ -51,8 +27,6 @@ footer: |
 header: |
   # terraform-minikube-platform
 
-  **Version 1.2.0** — Modern Terraform architecture with for_each, validation blocks, consistent labeling and clean separation of concerns.
+  **Version 1.2.0** — Modern Terraform standards (for_each, input validation, consistent labeling, clean architecture).
 
   A full-featured local Kubernetes development platform powered by Terraform and Minikube.
-
-  Includes a modern stack perfect for local development and experimentation.
