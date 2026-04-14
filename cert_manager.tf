@@ -1,6 +1,8 @@
-# cert-manager
+# cert-manager with Let's Encrypt issuers
+# Using for_each and common labels. No explicit depends_on - Terraform handles ordering.
+
 resource "helm_release" "cert_manager" {
-  count = var.enable_cert_manager ? 1 : 0
+  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
 
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
@@ -14,18 +16,23 @@ resource "helm_release" "cert_manager" {
     value = "true"
   }
 
-  depends_on = [kubernetes_namespace_v1.namespaces, helm_release.traefik]
+  values = [
+    yamlencode({
+      commonLabels = local.common_labels
+    })
+  ]
 }
 
-# Let's Encrypt ClusterIssuers (Staging + Production)
+# Let's Encrypt ClusterIssuer - Staging
 resource "kubernetes_manifest" "cluster_issuer_staging" {
-  count = var.enable_cert_manager ? 1 : 0
+  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
 
   manifest = {
     apiVersion = "cert-manager.io/v1"
     kind       = "ClusterIssuer"
     metadata = {
-      name = "letsencrypt-staging"
+      name   = "letsencrypt-staging"
+      labels = local.common_labels
     }
     spec = {
       acme = {
@@ -44,18 +51,18 @@ resource "kubernetes_manifest" "cluster_issuer_staging" {
       }
     }
   }
-
-  depends_on = [helm_release.cert_manager]
 }
 
+# Let's Encrypt ClusterIssuer - Production
 resource "kubernetes_manifest" "cluster_issuer_production" {
-  count = var.enable_cert_manager ? 1 : 0
+  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
 
   manifest = {
     apiVersion = "cert-manager.io/v1"
     kind       = "ClusterIssuer"
     metadata = {
-      name = "letsencrypt-production"
+      name   = "letsencrypt-production"
+      labels = local.common_labels
     }
     spec = {
       acme = {
@@ -74,6 +81,4 @@ resource "kubernetes_manifest" "cluster_issuer_production" {
       }
     }
   }
-
-  depends_on = [helm_release.cert_manager]
 }

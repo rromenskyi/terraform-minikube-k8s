@@ -24,7 +24,17 @@ Thumbs.db
 *.swo
 
 # Grok CLI internal directory
-.grok/
+.grok/cache/
+.grok/sessions/
+.grok/memory/
+
+# Grok Skills — we WANT to commit these
+!skills/
+!.grok/skills/
+!AGENT.md
+!GROK.md
+!ENGINEER.md
+!CODING_STANDARDS.md
 
 # Module specific
 tf

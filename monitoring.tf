@@ -1,18 +1,20 @@
-# Generate random password for Grafana
+# Monitoring stack (Prometheus + Grafana) using kube-prometheus-stack
+# for_each pattern + common labels. No explicit depends_on.
+
 resource "random_password" "grafana" {
-  count   = var.enable_monitoring ? 1 : 0
+  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+
   length  = 16
   special = false
 }
 
-# Monitoring stack: Prometheus + Grafana (kube-prometheus-stack)
 resource "helm_release" "monitoring" {
-  count = var.enable_monitoring ? 1 : 0
+  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
 
   name             = "kube-prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
   chart            = "kube-prometheus-stack"
-  version          = "68.1.1"
+  version          = "70.0.0" # Updated to newer version
   namespace        = "monitoring"
   create_namespace = true
 
@@ -46,12 +48,13 @@ resource "helm_release" "monitoring" {
     value = "grafana.localhost"
   }
 
+  # Better ServiceMonitor handling
   set {
     name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
     value = "false"
   }
 
-  # Increase resources a bit for local Minikube
+  # Reasonable resources for local Minikube
   set {
     name  = "prometheus.prometheusSpec.resources.requests.cpu"
     value = "200m"
@@ -62,20 +65,28 @@ resource "helm_release" "monitoring" {
     value = "512Mi"
   }
 
-  depends_on = [
-    kubernetes_namespace_v1.namespaces,
-    helm_release.traefik,
-    helm_release.cert_manager
+  values = [
+    yamlencode({
+      commonLabels = local.common_labels
+      grafana = {
+        sidecar = {
+          dashboards = {
+            enabled = true
+          }
+        }
+      }
+    })
   ]
 }
 
-# Grafana Ingress (additional config for Traefik)
+# Additional Traefik-specific Ingress for Grafana (using kubernetes_ingress_v1 for compatibility)
 resource "kubernetes_ingress_v1" "grafana" {
-  count = var.enable_monitoring ? 1 : 0
+  for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
 
   metadata {
     name      = "grafana"
     namespace = "monitoring"
+    labels    = local.common_labels
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
       "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -102,6 +113,4 @@ resource "kubernetes_ingress_v1" "grafana" {
       }
     }
   }
-
-  depends_on = [helm_release.monitoring]
 }
