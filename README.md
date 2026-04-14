@@ -92,7 +92,7 @@ minikube -p demo-cluster dashboard
 
 ## Backend Setup (Backblaze B2)
 
-This module uses an S3-compatible backend for storing Terraform state.  
+This module uses an S3-compatible backend for storing Terraform state.
 **Backblaze B2** is recommended — it's cheap, reliable, and easy to set up.
 
 See `.env.example` for configuration details.
@@ -105,7 +105,7 @@ Feel free to fork, improve, and use in your projects. Pull requests are welcome.
 
 ---
 
-**License:** MIT  
+**License:** MIT
 **Author:** @rromenskyi
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
