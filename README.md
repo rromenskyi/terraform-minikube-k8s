@@ -60,7 +60,22 @@ terraform output -json grafana_credentials | jq -r '.value.password'
 - [`examples/basic/`](examples/basic/) — Minimal configuration
 - [`examples/demo/`](examples/demo/) — Full platform with demo app, TLS, and monitoring (**recommended**)
 
-## Useful Commands
+## Development
+
+### Pre-commit hooks (recommended)
+
+This project uses [pre-commit](https://pre-commit.com/) to ensure code quality:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+pre-commit install
+
+# Run manually
+pre-commit run -a
+```
+
+### Useful Commands
 
 ```bash
 # View all outputs
@@ -72,6 +87,8 @@ terraform output -json grafana_credentials | jq -r '.value.password'
 # Open dashboards
 minikube -p demo-cluster dashboard
 ```
+
+**Note:** The CI pipeline will also run `terraform fmt`, `validate`, and `terraform-docs`.
 
 ## Backend Setup (Backblaze B2)
 
