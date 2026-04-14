@@ -2,6 +2,11 @@ variable "cluster_name" {
   description = "Name of the minikube cluster"
   type        = string
   default     = "tf-local"
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9-]{0,62}$", var.cluster_name))
+    error_message = "Cluster name must be lowercase alphanumeric with hyphens, max 63 characters."
+  }
 }
 
 variable "driver" {
@@ -78,12 +83,22 @@ variable "service_cidr" {
   description = "CIDR range for Kubernetes Services (ClusterIP)"
   type        = string
   default     = "100.64.0.0/13"
+
+  validation {
+    condition     = can(cidrhost(var.service_cidr, 0))
+    error_message = "service_cidr must be a valid CIDR block."
+  }
 }
 
 variable "pod_cidr" {
   description = "CIDR range for Pods (if supported by CNI)"
   type        = string
   default     = "100.72.0.0/13"
+
+  validation {
+    condition     = can(cidrhost(var.pod_cidr, 0))
+    error_message = "pod_cidr must be a valid CIDR block."
+  }
 }
 
 variable "dns_ip" {
@@ -121,6 +136,11 @@ variable "letsencrypt_email" {
   description = "Email for Let's Encrypt registration (required for cert-manager)"
   type        = string
   default     = "admin@example.com"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.letsencrypt_email))
+    error_message = "letsencrypt_email must be a valid email address."
+  }
 }
 
 variable "traefik_version" {
@@ -171,3 +191,5 @@ variable "enable_monitoring" {
   type        = bool
   default     = true
 }
+
+# Validation blocks (added to original variable definitions above)

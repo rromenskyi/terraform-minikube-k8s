@@ -7,9 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-04-14
+
+### Changed
+- **Major architecture refactor**: Split `main.tf` into focused files (`cluster.tf`, `namespaces.tf`, `workloads.tf`, `locals.tf`)
+- Replaced all `count = var.enabled ? 1 : 0` with modern `for_each = var.enabled ? toset(["enabled"]) : toset([])` pattern
+- Removed all explicit `depends_on` blocks (Terraform implicit dependencies are sufficient and cleaner)
+- Added comprehensive `validation` blocks for critical variables (cluster name, CIDRs, email)
+- Introduced `local.common_labels` applied consistently across all resources
+- Updated `kube-prometheus-stack` to v70.0.0
+- Significantly improved code quality, comments, and adherence to Terraform best practices
+
 ### Added
-- Support for configurable backend via environment variables (`.env`)
-- Improved bootstrap documentation for Backblaze B2
+- `locals.tf` with standardized labeling
+- Strong input validation (Terraform God Mode)
+- Consistent labeling following Kubernetes and Terraform conventions
+- Updated Grok Super Skills integration (`AGENT.md` + `skills/` directory)
+
+### Removed
+- Redundant `depends_on` declarations
+- Old `count`-based conditional resources
+- Duplicated logic between files
+
+### Improved
+- Code is now much more maintainable, idiomatic, and production-grade
+- Better separation of concerns
+- Enhanced documentation and inline comments
+- Stronger alignment with Staff+ engineering standards
+
+### Documentation
+- Updated `README.md` with Grok Skills section
+- All skill files (`AGENT.md`, `skills/*.md`) rewritten in professional English
+- Improved module structure documentation
+
+**This release brings the module to a true "Terraform God Mode" quality level.**
 
 ## [1.0.0] - 2025-04-14
 

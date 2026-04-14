@@ -58,7 +58,7 @@ output "dns_ip" {
 
 output "ops_statefulset_name" {
   description = "Name of the ops StatefulSet (if created)"
-  value       = var.create_ops_workload ? kubernetes_stateful_set_v1.ops[0].metadata[0].name : null
+  value       = var.create_ops_workload ? kubernetes_stateful_set_v1.ops["enabled"].metadata[0].name : null
 }
 
 output "namespaces" {
@@ -91,7 +91,7 @@ output "grafana_credentials" {
   value = var.enable_monitoring ? {
     url      = "https://grafana.localhost"
     username = "admin"
-    password = random_password.grafana[0].result
+    password = random_password.grafana["enabled"].result
   } : null
   sensitive = true
 }

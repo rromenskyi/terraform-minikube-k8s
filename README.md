@@ -1,5 +1,7 @@
 # terraform-minikube-platform
 
+**Version 1.2.0** — Major refactoring to modern Terraform standards (`for_each`, validation blocks, consistent labeling, clean architecture).
+
 **A full-featured local Kubernetes development platform powered by Terraform and Minikube.**
 
 Includes a modern stack perfect for local development and experimentation:
@@ -96,6 +98,20 @@ This module uses an S3-compatible backend for storing Terraform state.
 **Backblaze B2** is recommended — it's cheap, reliable, and easy to set up.
 
 See `.env.example` for configuration details.
+
+---
+
+## Grok Super Skills
+
+This repository includes a `skills/` directory + `AGENT.md` that significantly enhances Grok Agent mode.
+
+These files inject Staff+ level Terraform, Kubernetes, SRE, and code quality standards directly into the AI. When using Grok CLI in this project:
+
+- All code suggestions follow hyperscaler best practices
+- Reviews are extremely strict (`code-reviewer-from-hell` mode)
+- Output is production-grade by default
+
+To add new capabilities, simply create additional focused files in the `skills/` directory.
 
 ---
 

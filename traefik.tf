@@ -1,6 +1,8 @@
 # Traefik Ingress Controller
+# Using for_each pattern instead of count for modern Terraform standards
+
 resource "helm_release" "traefik" {
-  count = var.enable_traefik ? 1 : 0
+  for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
 
   name             = "traefik"
   repository       = "https://traefik.github.io/charts"
@@ -9,6 +11,7 @@ resource "helm_release" "traefik" {
   namespace        = "traefik"
   create_namespace = true
 
+  # Core service configuration
   set {
     name  = "service.type"
     value = "LoadBalancer"
@@ -29,6 +32,7 @@ resource "helm_release" "traefik" {
     value = "true"
   }
 
+  # IngressClass configuration
   set {
     name  = "ingressClass.enabled"
     value = "true"
@@ -39,12 +43,17 @@ resource "helm_release" "traefik" {
     value = "true"
   }
 
-  depends_on = [kubernetes_namespace_v1.namespaces]
+  # Add common labels via values (if chart supports it)
+  values = [
+    yamlencode({
+      commonLabels = local.common_labels
+    })
+  ]
 }
 
-# Traefik Dashboard (via IngressRoute)
+# Traefik Dashboard (IngressRoute)
 resource "kubernetes_manifest" "traefik_dashboard" {
-  count = var.enable_traefik && var.enable_traefik_dashboard ? 1 : 0
+  for_each = var.enable_traefik && var.enable_traefik_dashboard ? toset(["enabled"]) : toset([])
 
   manifest = {
     apiVersion = "traefik.io/v1alpha1"
@@ -52,6 +61,7 @@ resource "kubernetes_manifest" "traefik_dashboard" {
     metadata = {
       name      = "traefik-dashboard"
       namespace = "traefik"
+      labels    = local.common_labels
     }
     spec = {
       entryPoints = ["web"]
@@ -65,16 +75,15 @@ resource "kubernetes_manifest" "traefik_dashboard" {
       }]
     }
   }
-
-  depends_on = [helm_release.traefik]
 }
 
-# Traefik IngressClass
+# Explicit IngressClass
 resource "kubernetes_ingress_class_v1" "traefik" {
-  count = var.enable_traefik ? 1 : 0
+  for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
 
   metadata {
-    name = "traefik"
+    name   = "traefik"
+    labels = local.common_labels
   }
 
   spec {
