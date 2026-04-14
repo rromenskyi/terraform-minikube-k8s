@@ -1,0 +1,56 @@
+---
+formatter: markdown
+output:
+  file: README.md
+  mode: inject
+  template: |-
+    {{ .Header }}
+
+    {{ .Body }}
+
+    {{ .Inputs }}
+
+    {{ .Outputs }}
+
+    {{ .Footer }}
+sort:
+  enabled: true
+  by: name
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: true
+  escape: true
+  hide: []
+  html: true
+  indent: 2
+  required: true
+  sensitive: true
+  type: true
+sections:
+  show:
+    - header
+    - body
+    - inputs
+    - outputs
+    - footer
+  hide: []
+  order:
+    - header
+    - body
+    - inputs
+    - outputs
+    - footer
+footer: |
+  ---
+
+  **Built for comfortable local Kubernetes development.**
+
+  See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+header: |
+  # minikube-platform
+
+  **A full-featured local Kubernetes development platform powered by Terraform and Minikube.**
+
+  Includes a modern stack perfect for local development and experimentation.
