@@ -6,7 +6,7 @@ output:
   template: |-
     {{ .Header }}
 
-    {{ .Body }}
+    {{ .Content }}
 
     {{ .Inputs }}
 
@@ -31,14 +31,14 @@ settings:
 sections:
   show:
     - header
-    - body
+    - content
     - inputs
     - outputs
     - footer
   hide: []
   order:
     - header
-    - body
+    - content
     - inputs
     - outputs
     - footer
@@ -49,8 +49,10 @@ footer: |
 
   See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 header: |
-  # minikube-platform
+  # terraform-minikube-platform
 
-  **A full-featured local Kubernetes development platform powered by Terraform and Minikube.**
+  **Version 1.2.0** — Modern Terraform architecture with for_each, validation blocks, consistent labeling and clean separation of concerns.
+
+  A full-featured local Kubernetes development platform powered by Terraform and Minikube.
 
   Includes a modern stack perfect for local development and experimentation.
