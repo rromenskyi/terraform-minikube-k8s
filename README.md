@@ -1,4 +1,4 @@
-# minikube-platform
+# terraform-minikube-platform
 
 **A full-featured local Kubernetes development platform powered by Terraform and Minikube.**
 

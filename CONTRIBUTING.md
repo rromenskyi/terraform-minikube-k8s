@@ -20,11 +20,9 @@ Thank you for wanting to improve this module!
 - Bug fixes
 - Better UX for bootstrap/setup
 
-## Repository name suggestions
+## Repository name
 
-- `minikube-platform` (recommended)
-- `terraform-minikube-platform`
-- `local-k8s-platform`
+This repository is now called `terraform-minikube-platform`.
 
 ---
 
