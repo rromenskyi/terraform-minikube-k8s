@@ -9,11 +9,11 @@ resource "random_password" "grafana" {
 resource "helm_release" "monitoring" {
   count = var.enable_monitoring ? 1 : 0
 
-  name       = "kube-prometheus-stack"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  version    = "68.1.1"
-  namespace  = "monitoring"
+  name             = "kube-prometheus-stack"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  version          = "68.1.1"
+  namespace        = "monitoring"
   create_namespace = true
 
   set {
