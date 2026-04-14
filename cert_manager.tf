@@ -2,7 +2,7 @@
 # Using for_each and common labels. No explicit depends_on - Terraform handles ordering.
 
 resource "helm_release" "cert_manager" {
-  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_cert_manager ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   name             = "cert-manager"
@@ -26,7 +26,7 @@ resource "helm_release" "cert_manager" {
 
 # Let's Encrypt ClusterIssuer - Staging
 resource "kubernetes_manifest" "cluster_issuer_staging" {
-  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_cert_manager ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   manifest = {
@@ -57,7 +57,7 @@ resource "kubernetes_manifest" "cluster_issuer_staging" {
 
 # Let's Encrypt ClusterIssuer - Production
 resource "kubernetes_manifest" "cluster_issuer_production" {
-  for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  for_each   = var.enable_cert_manager ? toset(["enabled"]) : toset([])
   depends_on = [minikube_cluster.this]
 
   manifest = {
