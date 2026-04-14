@@ -14,12 +14,12 @@ module "minikube" {
   pod_cidr     = "100.72.0.0/13"
   dns_ip       = "100.64.0.10"
 
-  namespaces           = ["apps", "monitoring"]
-  enable_traefik            = true
-  enable_traefik_dashboard  = true
-  enable_cert_manager       = true
-  enable_monitoring         = true
-  letsencrypt_email         = "demo@example.com"
+  namespaces               = ["apps", "monitoring"]
+  enable_traefik           = true
+  enable_traefik_dashboard = true
+  enable_cert_manager      = true
+  enable_monitoring        = true
+  letsencrypt_email        = "demo@example.com"
   # grafana password is randomly generated (see: terraform output grafana_credentials)
 }
 
@@ -135,8 +135,8 @@ output "demo_urls" {
     app_url           = "https://demo.localhost"
     traefik_url       = "http://traefik.localhost"
     traefik_dashboard = "http://traefik.localhost/dashboard/"
-    grafana_url   = "https://grafana.localhost"
-    note          = "Run: minikube -p demo-cluster tunnel. Password: terraform output -json grafana_credentials | jq -r '.value.password'"
+    grafana_url       = "https://grafana.localhost"
+    note              = "Run: minikube -p demo-cluster tunnel. Password: terraform output -json grafana_credentials | jq -r '.value.password'"
   }
 }
 

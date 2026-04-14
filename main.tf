@@ -1,16 +1,16 @@
 # Minikube Cluster
 resource "minikube_cluster" "this" {
-  vm           = true
-  driver       = var.driver
-  cluster_name = var.cluster_name
-  nodes        = var.nodes
-  cpus         = var.cpus
-  memory       = var.memory
-  cni          = var.cni
-  network      = "builtin"
+  vm                = true
+  driver            = var.driver
+  cluster_name      = var.cluster_name
+  nodes             = var.nodes
+  cpus              = var.cpus
+  memory            = var.memory
+  cni               = var.cni
+  network           = "builtin"
   container_runtime = "docker"
-  base_image   = var.base_image
-  iso_url      = var.iso_urls
+  base_image        = var.base_image
+  iso_url           = var.iso_urls
 
   # Addons (Traefik and cert-manager are installed via Helm instead of minikube addons)
   addons = var.addons

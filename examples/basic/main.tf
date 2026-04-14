@@ -26,8 +26,8 @@ module "minikube" {
   pod_cidr     = "100.72.0.0/13"
   dns_ip       = "100.64.0.10"
 
-  cni        = "calico"           # better than bridge for ingress
-  namespaces = ["ops", "monitoring", "apps"]
+  cni            = "calico" # better than bridge for ingress
+  namespaces     = ["ops", "monitoring", "apps"]
   enable_ingress = true
 }
 
@@ -41,9 +41,9 @@ output "get_kubeconfig_cmd" {
 
 output "cluster_info" {
   value = {
-    name      = module.minikube.cluster_name
-    host      = module.minikube.cluster_host
-    addons    = module.minikube.addons
-    ops_pod   = module.minikube.ops_statefulset_name
+    name    = module.minikube.cluster_name
+    host    = module.minikube.cluster_host
+    addons  = module.minikube.addons
+    ops_pod = module.minikube.ops_statefulset_name
   }
 }

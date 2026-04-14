@@ -2,11 +2,11 @@
 resource "helm_release" "traefik" {
   count = var.enable_traefik ? 1 : 0
 
-  name       = "traefik"
-  repository = "https://traefik.github.io/charts"
-  chart      = "traefik"
-  version    = var.traefik_version
-  namespace  = "traefik"
+  name             = "traefik"
+  repository       = "https://traefik.github.io/charts"
+  chart            = "traefik"
+  version          = var.traefik_version
+  namespace        = "traefik"
   create_namespace = true
 
   set {
@@ -56,8 +56,8 @@ resource "kubernetes_manifest" "traefik_dashboard" {
     spec = {
       entryPoints = ["web"]
       routes = [{
-        match  = "Host(`traefik.localhost`)"
-        kind   = "Rule"
+        match = "Host(`traefik.localhost`)"
+        kind  = "Rule"
         services = [{
           name = "api@internal"
           kind = "TraefikService"
