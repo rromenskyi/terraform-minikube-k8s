@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-04-14
+
+### Added
+- `AGENT.md` and `skills/` directory with structured engineering guidelines for AI assistants
+- Public documentation of AI Assistant Configuration in README
+
+### Changed
+- Updated README.md to refer to "AI Assistant Configuration" instead of internal tool names
+- Made developer experience files part of the public module
+
+### Documentation
+- Improved section about how the repository helps AI coding tools maintain high quality standards
+
 ## [1.2.0] - 2025-04-14
 
 ### Changed
