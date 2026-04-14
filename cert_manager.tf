@@ -3,6 +3,7 @@
 
 resource "helm_release" "cert_manager" {
   for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
@@ -26,6 +27,7 @@ resource "helm_release" "cert_manager" {
 # Let's Encrypt ClusterIssuer - Staging
 resource "kubernetes_manifest" "cluster_issuer_staging" {
   for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   manifest = {
     apiVersion = "cert-manager.io/v1"
@@ -56,6 +58,7 @@ resource "kubernetes_manifest" "cluster_issuer_staging" {
 # Let's Encrypt ClusterIssuer - Production
 resource "kubernetes_manifest" "cluster_issuer_production" {
   for_each = var.enable_cert_manager ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   manifest = {
     apiVersion = "cert-manager.io/v1"

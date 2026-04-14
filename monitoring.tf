@@ -3,6 +3,7 @@
 
 resource "random_password" "grafana" {
   for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   length  = 16
   special = false
@@ -10,6 +11,7 @@ resource "random_password" "grafana" {
 
 resource "helm_release" "monitoring" {
   for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   name             = "kube-prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
@@ -82,6 +84,7 @@ resource "helm_release" "monitoring" {
 # Additional Traefik-specific Ingress for Grafana (using kubernetes_ingress_v1 for compatibility)
 resource "kubernetes_ingress_v1" "grafana" {
   for_each = var.enable_monitoring ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   metadata {
     name      = "grafana"
