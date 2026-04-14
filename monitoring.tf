@@ -20,7 +20,7 @@ resource "helm_release" "monitoring" {
 
   set {
     name  = "grafana.adminPassword"
-    value = random_password.grafana[0].result
+    value = random_password.grafana["enabled"].result
   }
 
   set {
