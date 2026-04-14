@@ -101,17 +101,13 @@ See `.env.example` for configuration details.
 
 ---
 
-## Grok Super Skills
+## AI Assistant Configuration
 
-This repository includes a `skills/` directory + `AGENT.md` that significantly enhances Grok Agent mode.
+This repository includes `AGENT.md` and a `skills/` directory with structured engineering guidelines.
 
-These files inject Staff+ level Terraform, Kubernetes, SRE, and code quality standards directly into the AI. When using Grok CLI in this project:
+These files encode Terraform, Kubernetes, SRE and code quality best practices. When used with an AI coding assistant that has repository context (such as Grok Agent), it automatically follows hyperscaler-level standards, architecture principles and strict review criteria.
 
-- All code suggestions follow hyperscaler best practices
-- Reviews are extremely strict (`code-reviewer-from-hell` mode)
-- Output is production-grade by default
-
-To add new capabilities, simply create additional focused files in the `skills/` directory.
+To extend the guidelines, add new focused files to the `skills/` directory.
 
 ---
 
