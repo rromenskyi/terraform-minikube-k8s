@@ -3,6 +3,7 @@
 
 resource "helm_release" "traefik" {
   for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   name             = "traefik"
   repository       = "https://traefik.github.io/charts"
@@ -54,6 +55,7 @@ resource "helm_release" "traefik" {
 # Traefik Dashboard (IngressRoute)
 resource "kubernetes_manifest" "traefik_dashboard" {
   for_each = var.enable_traefik && var.enable_traefik_dashboard ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   manifest = {
     apiVersion = "traefik.io/v1alpha1"
@@ -80,6 +82,7 @@ resource "kubernetes_manifest" "traefik_dashboard" {
 # Explicit IngressClass
 resource "kubernetes_ingress_class_v1" "traefik" {
   for_each = var.enable_traefik ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   metadata {
     name   = "traefik"

@@ -3,6 +3,7 @@
 
 resource "kubernetes_stateful_set_v1" "ops" {
   for_each = var.create_ops_workload ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this]
 
   metadata {
     name      = "ops"
