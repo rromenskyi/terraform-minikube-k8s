@@ -23,6 +23,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Grok CLI internal directory
+.grok/
+
 # Module specific
 tf
 tfstate-*
