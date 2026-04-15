@@ -21,12 +21,10 @@ settings:
 footer: |
   ---
 
-  **Built for comfortable local Kubernetes development.**
+  **Built for Terraform-first local Kubernetes platform bootstrap.**
 
   See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 header: |
-  # terraform-minikube-platform
+  # terraform-minikube-k8s
 
-  **Version 1.2.0** — Modern Terraform standards (for_each, input validation, consistent labeling, clean architecture).
-
-  A full-featured local Kubernetes development platform powered by Terraform and Minikube.
+  **A full-featured local Kubernetes platform module powered by Terraform and Minikube.**
