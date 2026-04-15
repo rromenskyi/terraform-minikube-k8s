@@ -28,7 +28,7 @@ module "minikube" {
 
   cni            = "calico" # better than bridge for ingress
   namespaces     = ["ops", "monitoring", "apps"]
-  enable_ingress = true
+  enable_traefik = true
 }
 
 output "kubeconfig_path" {

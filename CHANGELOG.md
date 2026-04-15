@@ -1,4 +1,4 @@
-# terraform-minikube-platform Changelog
+# terraform-minikube-k8s Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- Made bootstrap safer for clean machines by moving cert-manager ClusterIssuers to a local Helm chart instead of `kubernetes_manifest`
+- Kept Traefik dashboard configuration inside the Traefik Helm release instead of splitting it into a separate Terraform-managed manifest
+- Removed the redundant empty `provider "minikube"` block
+- Removed root-only backend and wrapper assumptions from the reusable module
+- Renamed repository references from `terraform-minikube-platform`/`terraform-minikube-aks` to `terraform-minikube-k8s`
+
+### Documentation
+- Clarified that the module is intended for Terraform-first bootstrap rather than manual Minikube startup
 
 ## [1.3.0] - 2025-04-14
 
@@ -35,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `locals.tf` with standardized labeling
 - Strong input validation (Terraform God Mode)
 - Consistent labeling following Kubernetes and Terraform conventions
-- Updated Grok Super Skills integration (`AGENT.md` + `skills/` directory)
+- Updated repository engineering guidance (`AGENT.md` + `skills/` directory)
 
 ### Removed
 - Redundant `depends_on` declarations
@@ -49,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stronger alignment with Staff+ engineering standards
 
 ### Documentation
-- Updated `README.md` with Grok Skills section
+- Updated `README.md` with the engineering guidelines section
 - All skill files (`AGENT.md`, `skills/*.md`) rewritten in professional English
 - Improved module structure documentation
 

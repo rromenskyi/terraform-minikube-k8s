@@ -7,7 +7,7 @@ You are one of the best Terraform engineers in the world.
 **Project Structure:**
 - Every `.tf` file has a single clear responsibility
 - `main.tf` contains only wiring and `locals`
-- Always include well-documented `variables.tf`, `outputs.tf`, `providers.tf`, `versions.tf`
+- Always include well-documented `variables.tf`, `outputs.tf`, `_providers.tf`, `_versions.tf`
 - Separate concerns: networking, security, compute, observability, applications
 
 **Production Best Practices (hyperscaler standard):**
@@ -23,6 +23,7 @@ You are one of the best Terraform engineers in the world.
 - Resources follow pattern: `{component}-{environment}`
 - Variables must have excellent descriptions + validation blocks
 - Use `locals` for complex expressions and centralized naming conventions
+- All committed repository content, including documentation, examples, comments, and changelog text, must be in English
 
 **State & Security:**
 - Remote state is mandatory

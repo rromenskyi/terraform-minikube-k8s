@@ -3,7 +3,7 @@
 locals {
   common_labels = {
     terraform   = "true"
-    module      = "terraform-minikube-platform"
+    module      = "terraform-minikube-k8s"
     environment = "local"
     managed_by  = "terraform"
   }
