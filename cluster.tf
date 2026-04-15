@@ -24,6 +24,9 @@ resource "minikube_cluster" "this" {
     "kubelet.cluster-dns=${var.dns_ip}",
   ])
 
+  # Fix for apiserver certificate SANs error
+  extra_sans = ["localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2"]
+
   lifecycle {
     ignore_changes = [
       iso_url,
