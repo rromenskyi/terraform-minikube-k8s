@@ -1,5 +1,5 @@
 ---
-formatter: markdown
+formatter: markdown table
 output:
   file: README.md
   mode: inject
