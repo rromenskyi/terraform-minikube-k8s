@@ -22,10 +22,8 @@ resource "minikube_cluster" "this" {
     "kubeadm.service-cluster-ip-range=${var.service_cidr}",
     "kubeadm.cluster-dns=${var.dns_ip}",
     "kubelet.cluster-dns=${var.dns_ip}",
+    "kubeadm.apiserver-cert-extra-sans=localhost,127.0.0.1,10.0.0.1,192.168.49.2",
   ])
-
-  # Fix for apiserver certificate SANs error
-  extra_sans = ["localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2"]
 
   lifecycle {
     ignore_changes = [
