@@ -24,64 +24,22 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
-# Let's Encrypt ClusterIssuer - Staging
-resource "kubernetes_manifest" "cluster_issuer_staging" {
+# Let's Encrypt ClusterIssuers are installed through a small local Helm chart.
+# This keeps first-run bootstrap safe because the Helm provider can plan the
+# release before the Kubernetes API is reachable.
+resource "helm_release" "cluster_issuers" {
   for_each   = var.enable_cert_manager ? toset(["enabled"]) : toset([])
-  depends_on = [minikube_cluster.this]
+  depends_on = [helm_release.cert_manager]
 
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "ClusterIssuer"
-    metadata = {
-      name   = "letsencrypt-staging"
-      labels = local.common_labels
-    }
-    spec = {
-      acme = {
-        server = "https://acme-staging-v02.api.letsencrypt.org/directory"
-        email  = var.letsencrypt_email
-        privateKeySecretRef = {
-          name = "letsencrypt-staging-key"
-        }
-        solvers = [{
-          http01 = {
-            ingress = {
-              class = "traefik"
-            }
-          }
-        }]
-      }
-    }
-  }
-}
+  name             = "cert-manager-cluster-issuers"
+  chart            = "${path.module}/charts/cert-manager-cluster-issuers"
+  namespace        = "cert-manager"
+  create_namespace = true
 
-# Let's Encrypt ClusterIssuer - Production
-resource "kubernetes_manifest" "cluster_issuer_production" {
-  for_each   = var.enable_cert_manager ? toset(["enabled"]) : toset([])
-  depends_on = [minikube_cluster.this]
-
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "ClusterIssuer"
-    metadata = {
-      name   = "letsencrypt-production"
-      labels = local.common_labels
-    }
-    spec = {
-      acme = {
-        server = "https://acme-v02.api.letsencrypt.org/directory"
-        email  = var.letsencrypt_email
-        privateKeySecretRef = {
-          name = "letsencrypt-production-key"
-        }
-        solvers = [{
-          http01 = {
-            ingress = {
-              class = "traefik"
-            }
-          }
-        }]
-      }
-    }
-  }
+  values = [
+    yamlencode({
+      commonLabels      = local.common_labels
+      letsencrypt_email = var.letsencrypt_email
+    })
+  ]
 }

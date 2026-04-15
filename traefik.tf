@@ -48,35 +48,15 @@ resource "helm_release" "traefik" {
   values = [
     yamlencode({
       commonLabels = local.common_labels
+      ingressRoute = {
+        dashboard = {
+          enabled     = var.enable_traefik_dashboard
+          entryPoints = ["web"]
+          matchRule   = "Host(`traefik.localhost`)"
+        }
+      }
     })
   ]
-}
-
-# Traefik Dashboard (IngressRoute)
-resource "kubernetes_manifest" "traefik_dashboard" {
-  for_each   = var.enable_traefik && var.enable_traefik_dashboard ? toset(["enabled"]) : toset([])
-  depends_on = [minikube_cluster.this]
-
-  manifest = {
-    apiVersion = "traefik.io/v1alpha1"
-    kind       = "IngressRoute"
-    metadata = {
-      name      = "traefik-dashboard"
-      namespace = "traefik"
-      labels    = local.common_labels
-    }
-    spec = {
-      entryPoints = ["web"]
-      routes = [{
-        match = "Host(`traefik.localhost`)"
-        kind  = "Rule"
-        services = [{
-          name = "api@internal"
-          kind = "TraefikService"
-        }]
-      }]
-    }
-  }
 }
 
 # Explicit IngressClass

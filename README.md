@@ -1,42 +1,40 @@
-# terraform-minikube-platform
+# terraform-minikube-k8s
 
-**Version 1.2.0** — Major refactoring to modern Terraform standards (`for_each`, validation blocks, consistent labeling, clean architecture).
+**A full-featured local Kubernetes platform module powered by Terraform and Minikube.**
 
-**A full-featured local Kubernetes development platform powered by Terraform and Minikube.**
+This module is designed for a Terraform-first workflow: the normal bootstrap path is Terraform itself creating the Minikube cluster and then converging platform services on top of it.
 
-Includes a modern stack perfect for local development and experimentation:
+## Operating Model
+
+- Use Terraform as the entrypoint for cluster lifecycle and platform rollout.
+- Do not rely on a manual `minikube start` before `terraform apply` for normal bootstrap.
+- If bootstrap is broken, fix Terraform/module logic instead of adding manual runbook steps.
+- Keep Terraform backend configuration in the consuming root stack or example, not in this reusable module source.
+- Traefik, cert-manager, monitoring, namespaces, and demo workloads are intended to converge from Terraform in one flow.
+
+Includes a modern stack for local development and experimentation:
 
 - **Traefik** — Ingress Controller with built-in Dashboard
 - **cert-manager** + Let's Encrypt (staging + production issuers)
 - **Prometheus + Grafana** — complete observability stack
 - Automatic namespace provisioning
 - Demo application with TLS termination
-- Remote state stored in Backblaze B2 (S3-compatible)
 
 ---
 
 ## Quick Start
 
-1. Sign up at **[Backblaze B2](https://www.backblaze.com/b2/)** (free tier available)
-2. Create a Bucket (e.g. `tfstate-unique`)
-3. Generate an **Application Key** with access to that bucket
-4. Copy and configure environment:
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
-5. Deploy the full demo:
+1. Deploy the full demo:
 
 ```bash
 cd examples/demo
-cp ../../.env.example .env
-../../tf init
-../../tf apply
+terraform init
+terraform apply
 ```
 
-After deployment, run in a separate terminal:
+`terraform apply` is expected to bootstrap Minikube itself and then converge the platform services in the same run.
+
+After deployment, run in a separate terminal if you need a local LoadBalancer tunnel:
 ```bash
 minikube -p demo-cluster tunnel
 ```
@@ -51,11 +49,10 @@ terraform output -json grafana_credentials | jq -r '.value.password'
 ## What's Included
 
 - `cluster.tf` — Minikube cluster + networking (uses 100.64.0.0/10 CGNAT range)
-- `providers.tf` — All provider configurations
+- `_providers.tf` — All provider configurations
 - `traefik.tf` — Traefik Ingress + Dashboard IngressRoute
 - `cert_manager.tf` — cert-manager + Let's Encrypt ClusterIssuers
 - `monitoring.tf` — kube-prometheus-stack (Prometheus + Grafana)
-- `backend.tf` — Remote state in Backblaze B2
 
 ## Examples
 
@@ -92,26 +89,16 @@ minikube -p demo-cluster dashboard
 
 **Note:** The CI pipeline will also run `terraform fmt`, `validate`, and `terraform-docs`.
 
-## Backend Setup (Backblaze B2)
-
-This module uses an S3-compatible backend for storing Terraform state.
-**Backblaze B2** is recommended — it's cheap, reliable, and easy to set up.
-
-See `.env.example` for configuration details.
-
----
-
 ## AI Assistant Configuration
 
 This repository includes `AGENT.md` and a `skills/` directory with structured engineering guidelines.
 
-These files encode Terraform, Kubernetes, SRE and code quality best practices. When used with an AI coding assistant that has repository context (such as Grok Agent), it automatically follows hyperscaler-level standards, architecture principles and strict review criteria.
-
+These files encode Terraform, Kubernetes, SRE, and code quality best practices. When used with an AI coding assistant that has repository context, they reinforce repository standards, architecture principles, and English-only repository content.
 To extend the guidelines, add new focused files to the `skills/` directory.
 
 ---
 
-**Built for comfortable local Kubernetes development.**
+**Built for Terraform-first local Kubernetes platform bootstrap.**
 
 Feel free to fork, improve, and use in your projects. Pull requests are welcome.
 
@@ -126,7 +113,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.0 |
@@ -136,7 +123,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.17.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.38.0 |
 | <a name="provider_minikube"></a> [minikube](#provider\_minikube) | 0.6.0 |
@@ -149,15 +136,13 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [helm_release.cluster_issuers](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.monitoring](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.traefik](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [kubernetes_ingress_class_v1.traefik](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_class_v1) | resource |
 | [kubernetes_ingress_v1.grafana](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_v1) | resource |
-| [kubernetes_manifest.cluster_issuer_production](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
-| [kubernetes_manifest.cluster_issuer_staging](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
-| [kubernetes_manifest.traefik_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_stateful_set_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/stateful_set_v1) | resource |
 | [minikube_cluster.this](https://registry.terraform.io/providers/scott-the-programmer/minikube/latest/docs/resources/cluster) | resource |
@@ -166,12 +151,8 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "ingress", "storage-provisioner", "metrics-server" ]``` | no |
-| <a name="input_backend_bucket"></a> [backend\_bucket](#input\_backend\_bucket) | S3 bucket name for Terraform state | `string` | `"tfstate-unique"` | no |
-| <a name="input_backend_endpoint"></a> [backend\_endpoint](#input\_backend\_endpoint) | S3-compatible endpoint (Backblaze B2) | `string` | `"https://s3.us-east-005.backblazeb2.com"` | no |
-| <a name="input_backend_key"></a> [backend\_key](#input\_backend\_key) | Path to state file in bucket | `string` | `"dev/terraform-minikube.tfstate"` | no |
-| <a name="input_backend_region"></a> [backend\_region](#input\_backend\_region) | Region for S3 backend | `string` | `"us-east-1"` | no |
 | <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.48"` | no |
 | <a name="input_cert_manager_version"></a> [cert\_manager\_version](#input\_cert\_manager\_version) | cert-manager Helm chart version | `string` | `"v1.16.1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the minikube cluster | `string` | `"tf-local"` | no |
@@ -185,6 +166,7 @@ No modules.
 | <a name="input_enable_traefik"></a> [enable\_traefik](#input\_enable\_traefik) | Deploy Traefik as Ingress controller via Helm | `bool` | `true` | no |
 | <a name="input_enable_traefik_dashboard"></a> [enable\_traefik\_dashboard](#input\_enable\_traefik\_dashboard) | Expose Traefik dashboard via IngressRoute | `bool` | `true` | no |
 | <a name="input_iso_urls"></a> [iso\_urls](#input\_iso\_urls) | List of ISO URLs to try | `list(string)` | ```[ "https://storage.googleapis.com/minikube/iso/minikube-v1.37.0-amd64.iso", "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso" ]``` | no |
+| <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version for the Minikube cluster (for example `v1.30.0` or `stable`) | `string` | `"stable"` | no |
 | <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager) | `string` | `"admin@example.com"` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `4096` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace for workloads | `string` | `"default"` | no |
@@ -198,7 +180,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_access_instructions"></a> [access\_instructions](#output\_access\_instructions) | Helpful commands to interact with the cluster |
 | <a name="output_addons"></a> [addons](#output\_addons) | Enabled minikube addons |
 | <a name="output_cert_manager_enabled"></a> [cert\_manager\_enabled](#output\_cert\_manager\_enabled) | Whether cert-manager is enabled |

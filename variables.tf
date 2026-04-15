@@ -51,6 +51,12 @@ variable "base_image" {
   default     = "gcr.io/k8s-minikube/kicbase:v0.0.48"
 }
 
+variable "kubernetes_version" {
+  description = "Kubernetes version for the Minikube cluster (for example `v1.30.0` or `stable`)"
+  type        = string
+  default     = "stable"
+}
+
 variable "iso_urls" {
   description = "List of ISO URLs to try"
   type        = list(string)
@@ -159,31 +165,6 @@ variable "enable_traefik_dashboard" {
   description = "Expose Traefik dashboard via IngressRoute"
   type        = bool
   default     = true
-}
-
-# Backend configuration (Backblaze B2 / S3 compatible)
-variable "backend_bucket" {
-  description = "S3 bucket name for Terraform state"
-  type        = string
-  default     = "tfstate-unique"
-}
-
-variable "backend_key" {
-  description = "Path to state file in bucket"
-  type        = string
-  default     = "dev/terraform-minikube.tfstate"
-}
-
-variable "backend_region" {
-  description = "Region for S3 backend"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "backend_endpoint" {
-  description = "S3-compatible endpoint (Backblaze B2)"
-  type        = string
-  default     = "https://s3.us-east-005.backblazeb2.com"
 }
 
 variable "enable_monitoring" {

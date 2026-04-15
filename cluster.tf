@@ -2,17 +2,18 @@
 # This file is intentionally kept minimal and focused
 
 resource "minikube_cluster" "this" {
-  vm                = true
-  driver            = var.driver
-  cluster_name      = var.cluster_name
-  nodes             = var.nodes
-  cpus              = var.cpus
-  memory            = var.memory
-  cni               = var.cni
-  network           = "builtin"
-  container_runtime = "docker"
-  base_image        = var.base_image
-  iso_url           = var.iso_urls
+  vm                 = true
+  driver             = var.driver
+  cluster_name       = var.cluster_name
+  nodes              = var.nodes
+  cpus               = var.cpus
+  memory             = var.memory
+  cni                = var.cni
+  network            = "builtin"
+  container_runtime  = "docker"
+  base_image         = var.base_image
+  kubernetes_version = var.kubernetes_version
+  iso_url            = var.iso_urls
 
   # Addons are kept minimal - Traefik and cert-manager are installed via Helm
   addons = var.addons

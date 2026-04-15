@@ -23,16 +23,16 @@ Thumbs.db
 *.swp
 *.swo
 
-# Grok CLI internal directory
+# Local assistant/internal directories
 .grok/cache/
 .grok/sessions/
 .grok/memory/
+.grok/settings.json
 
-# Grok Skills — we WANT to commit these
+# Assistant skills we intentionally commit
 !skills/
 !.grok/skills/
 !AGENT.md
-!GROK.md
 !ENGINEER.md
 !CODING_STANDARDS.md
 
@@ -44,3 +44,6 @@ tfstate-*
 examples/*/terraform.tfstate
 examples/*/.terraform/
 examples/*/crash.log
+
+# Local scratch notes
+docs.md

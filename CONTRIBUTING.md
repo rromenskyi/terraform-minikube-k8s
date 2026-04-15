@@ -22,7 +22,7 @@ Thank you for wanting to improve this module!
 
 ## Repository name
 
-This repository is now called `terraform-minikube-platform`.
+This repository is now called `terraform-minikube-k8s`.
 
 ---
 

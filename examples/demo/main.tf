@@ -1,5 +1,32 @@
 terraform {
   required_version = ">= 1.5.0"
+
+  required_providers {
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "kubernetes" {
+  host                   = module.minikube.cluster_host
+  client_certificate     = module.minikube.client_certificate
+  client_key             = module.minikube.client_key
+  cluster_ca_certificate = module.minikube.cluster_ca_certificate
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.minikube.cluster_host
+    client_certificate     = module.minikube.client_certificate
+    client_key             = module.minikube.client_key
+    cluster_ca_certificate = module.minikube.cluster_ca_certificate
+  }
 }
 
 module "minikube" {
@@ -25,6 +52,8 @@ module "minikube" {
 
 # Example application with Ingress + TLS
 resource "kubernetes_deployment_v1" "demo_app" {
+  depends_on = [module.minikube]
+
   metadata {
     name      = "demo-app"
     namespace = "apps"
@@ -57,6 +86,8 @@ resource "kubernetes_deployment_v1" "demo_app" {
 }
 
 resource "kubernetes_service_v1" "demo_app" {
+  depends_on = [module.minikube]
+
   metadata {
     name      = "demo-app"
     namespace = "apps"
@@ -71,28 +102,20 @@ resource "kubernetes_service_v1" "demo_app" {
   }
 }
 
-# Certificate via cert-manager
-resource "kubernetes_manifest" "demo_certificate" {
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "Certificate"
-    metadata = {
-      name      = "demo-tls"
-      namespace = "apps"
-    }
-    spec = {
-      secretName = "demo-tls"
-      issuerRef = {
-        name = "letsencrypt-staging"
-        kind = "ClusterIssuer"
-      }
-      dnsNames = ["demo.localhost"]
-    }
-  }
+# Certificate via cert-manager, rendered through a tiny local Helm chart
+resource "helm_release" "demo_certificate" {
+  depends_on = [module.minikube]
+
+  name             = "demo-certificate"
+  chart            = "${path.module}/charts/demo-certificate"
+  namespace        = "apps"
+  create_namespace = true
 }
 
 # Ingress with TLS
 resource "kubernetes_ingress_v1" "demo_ingress" {
+  depends_on = [helm_release.demo_certificate]
+
   metadata {
     name      = "demo-ingress"
     namespace = "apps"
@@ -127,7 +150,6 @@ resource "kubernetes_ingress_v1" "demo_ingress" {
     }
   }
 
-  depends_on = [kubernetes_manifest.demo_certificate]
 }
 
 output "demo_urls" {

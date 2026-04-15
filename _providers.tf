@@ -1,7 +1,5 @@
 # Providers configuration
 
-provider "minikube" {}
-
 provider "kubernetes" {
   host = minikube_cluster.this.host
 
