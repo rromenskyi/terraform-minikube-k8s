@@ -35,6 +35,7 @@ jobs:
         working-dir: .
         output-file: README.md
         output-method: inject
+        output-format: markdown table
         config-file: .terraform-docs.yml
 
     - name: Check for terraform-docs changes
