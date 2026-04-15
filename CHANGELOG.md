@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-04-14
+
+### Breaking
+- Renamed the public module repository/source to `terraform-minikube-k8s`
+- Removed backend configuration and backend-related inputs from the reusable module source; backend configuration now belongs only in consumer root stacks
+
+### Added
+- Added explicit `kubernetes_version` support for pinning the Kubernetes version inside the Minikube cluster
+
 ### Changed
 - Made bootstrap safer for clean machines by moving cert-manager ClusterIssuers to a local Helm chart instead of `kubernetes_manifest`
 - Kept Traefik dashboard configuration inside the Traefik Helm release instead of splitting it into a separate Terraform-managed manifest
 - Removed the redundant empty `provider "minikube"` block
 - Removed root-only backend and wrapper assumptions from the reusable module
 - Renamed repository references from `terraform-minikube-platform`/`terraform-minikube-aks` to `terraform-minikube-k8s`
+- Standardized repository-facing content on English-only documentation and guidance
 
 ### Documentation
 - Clarified that the module is intended for Terraform-first bootstrap rather than manual Minikube startup
