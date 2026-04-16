@@ -35,7 +35,7 @@ module "minikube" {
   cluster_name = "demo-cluster"
   cpus         = 4
   memory       = 6144
-  cni          = "calico"
+  cni          = "flannel"
 
   service_cidr = "100.64.0.0/13"
   pod_cidr     = "100.72.0.0/13"
@@ -158,7 +158,7 @@ output "demo_urls" {
     traefik_url       = "http://traefik.localhost"
     traefik_dashboard = "http://traefik.localhost/dashboard/"
     grafana_url       = "https://grafana.localhost"
-    note              = "Run: minikube -p demo-cluster tunnel. Password: terraform output -json grafana_credentials | jq -r '.value.password'"
+    note              = "For standalone access, expose Traefik for your driver first. Password: terraform output -json grafana_credentials | jq -r '.value.password'"
   }
 }
 

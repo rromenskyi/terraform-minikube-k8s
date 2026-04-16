@@ -4,7 +4,7 @@
 # intentionally NOT labeled here — some of those workloads need privileged pods.
 
 resource "kubernetes_namespace_v1" "namespaces" {
-  for_each   = toset(var.namespaces)
+  for_each   = local.managed_namespaces
   depends_on = [minikube_cluster.this]
 
   metadata {

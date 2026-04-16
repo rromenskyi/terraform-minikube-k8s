@@ -1,5 +1,11 @@
 # Providers configuration
 
+provider "minikube" {
+  # The provider incorrectly uses its own provider-level kubernetes_version
+  # default during cluster creation instead of the resource attribute.
+  kubernetes_version = var.kubernetes_version
+}
+
 provider "kubernetes" {
   host = minikube_cluster.this.host
 

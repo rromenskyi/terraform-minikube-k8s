@@ -18,13 +18,13 @@ variable "driver" {
 variable "cpus" {
   description = "Number of CPUs"
   type        = number
-  default     = 4
+  default     = 6
 }
 
 variable "memory" {
   description = "Memory in MB"
   type        = number
-  default     = 4096
+  default     = 6144
 }
 
 variable "nodes" {
@@ -39,7 +39,6 @@ variable "addons" {
   default = [
     "dashboard",
     "default-storageclass",
-    "ingress",
     "storage-provisioner",
     "metrics-server"
   ]
@@ -48,7 +47,7 @@ variable "addons" {
 variable "base_image" {
   description = "Base image for minikube"
   type        = string
-  default     = "gcr.io/k8s-minikube/kicbase:v0.0.48"
+  default     = "gcr.io/k8s-minikube/kicbase:v0.0.50"
 }
 
 variable "kubernetes_version" {
@@ -73,9 +72,9 @@ variable "create_ops_workload" {
 }
 
 variable "namespace" {
-  description = "Kubernetes namespace for workloads"
+  description = "Namespace for the optional ops workload"
   type        = string
-  default     = "default"
+  default     = "ops"
 }
 
 variable "ops_image" {
@@ -121,7 +120,7 @@ variable "dns_ip" {
 
 # Advanced configuration
 variable "cni" {
-  description = "CNI to use (bridge, calico, cilium, flannel, etc). Calico recommended for better ingress support."
+  description = "CNI to use (bridge, calico, cilium, flannel, etc). Flannel is recommended on the macOS Docker driver."
   type        = string
   default     = "calico"
 }

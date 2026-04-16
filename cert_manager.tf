@@ -17,11 +17,8 @@ resource "helm_release" "cert_manager" {
     value = "true"
   }
 
-  values = [
-    yamlencode({
-      commonLabels = local.common_labels
-    })
-  ]
+  # commonLabels is intentionally omitted: cert-manager's JSON Schema validation
+  # rejects unknown top-level keys starting from v1.14.
 }
 
 # Let's Encrypt ClusterIssuers are installed through a small local Helm chart.
