@@ -116,7 +116,7 @@ output "access_instructions" {
   description = "Helpful commands to interact with the cluster"
   value = {
     set_kubeconfig = "minikube -p ${var.cluster_name} kubeconfig get > ~/.kube/config"
-    tunnel         = "minikube -p ${var.cluster_name} tunnel"
+    tunnel         = "optional: minikube -p ${var.cluster_name} tunnel  # only needed for LoadBalancer services"
     dashboard      = "minikube -p ${var.cluster_name} dashboard"
     get_pods       = "kubectl get pods -A"
     get_ingress    = var.enable_traefik ? "kubectl get ingress -A" : null

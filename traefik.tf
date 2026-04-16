@@ -9,13 +9,15 @@ resource "helm_release" "traefik" {
   repository       = "https://traefik.github.io/charts"
   chart            = "traefik"
   version          = var.traefik_version
-  namespace        = "traefik"
+  namespace        = "ingress-controller"
   create_namespace = true
 
   # Core service configuration
+  # NodePort instead of LoadBalancer — Minikube does not provision cloud LBs.
+  # External traffic reaches Traefik via Cloudflare Tunnel, not a LoadBalancer IP.
   set {
     name  = "service.type"
-    value = "LoadBalancer"
+    value = "NodePort"
   }
 
   set {
@@ -44,7 +46,9 @@ resource "helm_release" "traefik" {
     value = "true"
   }
 
-  # Add common labels via values (if chart supports it)
+  # Relax readiness probe defaults — the chart ships with failureThreshold=1 and
+  # initialDelaySeconds=2, which is too aggressive on fresh clusters with Calico CNI
+  # where networking takes longer to converge.
   values = [
     yamlencode({
       commonLabels = local.common_labels
@@ -55,21 +59,22 @@ resource "helm_release" "traefik" {
           matchRule   = "Host(`traefik.${var.base_domain}`)"
         }
       }
+      readinessProbe = {
+        initialDelaySeconds = 15
+        failureThreshold    = 5
+        periodSeconds       = 10
+        successThreshold    = 1
+        timeoutSeconds      = 2
+      }
+      livenessProbe = {
+        initialDelaySeconds = 15
+        failureThreshold    = 5
+        periodSeconds       = 10
+        successThreshold    = 1
+        timeoutSeconds      = 2
+      }
     })
   ]
-}
 
-# Explicit IngressClass
-resource "kubernetes_ingress_class_v1" "traefik" {
-  for_each   = var.enable_traefik ? toset(["enabled"]) : toset([])
-  depends_on = [minikube_cluster.this]
-
-  metadata {
-    name   = "traefik"
-    labels = local.common_labels
-  }
-
-  spec {
-    controller = "traefik.io/ingress-controller"
-  }
+  timeout = 600
 }

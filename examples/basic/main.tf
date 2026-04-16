@@ -12,7 +12,6 @@ module "minikube" {
 
   addons = [
     "dashboard",
-    "ingress",
     "metrics-server",
     "storage-provisioner"
   ]
@@ -26,7 +25,7 @@ module "minikube" {
   pod_cidr     = "100.72.0.0/13"
   dns_ip       = "100.64.0.10"
 
-  cni            = "calico" # better than bridge for ingress
+  cni            = "flannel"
   namespaces     = ["ops", "monitoring", "apps"]
   enable_traefik = true
 }

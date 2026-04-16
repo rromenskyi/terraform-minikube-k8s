@@ -3,9 +3,30 @@
 # filesystem, all Linux capabilities dropped, and bounded resources — i.e.,
 # compatible with a `restricted` PodSecurity level, not just `baseline`.
 
+resource "kubernetes_service_v1" "ops" {
+  for_each   = var.create_ops_workload ? toset(["enabled"]) : toset([])
+  depends_on = [minikube_cluster.this, kubernetes_namespace_v1.namespaces]
+
+  metadata {
+    name      = "ops"
+    namespace = var.namespace
+    labels    = merge(local.common_labels, { app = "ops" })
+  }
+
+  spec {
+    cluster_ip = "None"
+    selector   = { app = "ops" }
+
+    port {
+      name = "ops"
+      port = 80
+    }
+  }
+}
+
 resource "kubernetes_stateful_set_v1" "ops" {
   for_each   = var.create_ops_workload ? toset(["enabled"]) : toset([])
-  depends_on = [minikube_cluster.this]
+  depends_on = [kubernetes_service_v1.ops]
 
   metadata {
     name      = "ops"
