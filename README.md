@@ -141,11 +141,11 @@ No modules.
 | [helm_release.cluster_issuers](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.monitoring](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.traefik](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [kubernetes_ingress_class_v1.traefik](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_class_v1) | resource |
 | [kubernetes_ingress_v1.grafana](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_v1) | resource |
 | [kubernetes_limit_range_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/limit_range_v1) | resource |
 | [kubernetes_namespace_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_resource_quota_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/resource_quota_v1) | resource |
+| [kubernetes_service_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_v1) | resource |
 | [kubernetes_stateful_set_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/stateful_set_v1) | resource |
 | [minikube_cluster.this](https://registry.terraform.io/providers/scott-the-programmer/minikube/latest/docs/resources/cluster) | resource |
 | [random_password.grafana](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
@@ -154,14 +154,14 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "ingress", "storage-provisioner", "metrics-server" ]``` | no |
+| <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "storage-provisioner", "metrics-server" ]``` | no |
 | <a name="input_apiserver_cert_extra_sans"></a> [apiserver\_cert\_extra\_sans](#input\_apiserver\_cert\_extra\_sans) | Additional Subject Alternative Names embedded in the apiserver certificate. The default covers minikube's docker driver node IP (`192.168.49.2`). When using qemu / hyperkit / kvm2 / vmware, run `minikube ip -p <cluster>` after bootstrap and extend this list with the driver-specific node IP. | `list(string)` | ```[ "localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2" ]``` | no |
 | <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Base domain used to derive default hostnames for Traefik dashboard (`traefik.<base>`) and Grafana (`grafana.<base>`). Defaults to `localhost` for local minikube usage; set to a real domain (e.g. `dev.example.com`) for remote access. | `string` | `"localhost"` | no |
-| <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.48"` | no |
+| <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.50"` | no |
 | <a name="input_cert_manager_version"></a> [cert\_manager\_version](#input\_cert\_manager\_version) | cert-manager Helm chart version | `string` | `"v1.16.1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the minikube cluster | `string` | `"tf-local"` | no |
-| <a name="input_cni"></a> [cni](#input\_cni) | CNI to use (bridge, calico, cilium, flannel, etc). Calico recommended for better ingress support. | `string` | `"calico"` | no |
-| <a name="input_cpus"></a> [cpus](#input\_cpus) | Number of CPUs | `number` | `4` | no |
+| <a name="input_cni"></a> [cni](#input\_cni) | CNI to use (bridge, calico, cilium, flannel, etc). Flannel is recommended on the macOS Docker driver. | `string` | `"calico"` | no |
+| <a name="input_cpus"></a> [cpus](#input\_cpus) | Number of CPUs | `number` | `6` | no |
 | <a name="input_create_ops_workload"></a> [create\_ops\_workload](#input\_create\_ops\_workload) | Whether to create the ops StatefulSet workload | `bool` | `true` | no |
 | <a name="input_dns_ip"></a> [dns\_ip](#input\_dns\_ip) | IP address for CoreDNS/kube-dns (must be inside service\_cidr) | `string` | `"100.64.0.10"` | no |
 | <a name="input_driver"></a> [driver](#input\_driver) | Minikube driver (docker, qemu, hyperkit, etc) | `string` | `"docker"` | no |
@@ -174,14 +174,14 @@ No modules.
 | <a name="input_kube_prometheus_stack_version"></a> [kube\_prometheus\_stack\_version](#input\_kube\_prometheus\_stack\_version) | kube-prometheus-stack Helm chart version | `string` | `"70.0.0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version for the Minikube cluster (for example `v1.30.0` or `stable`) | `string` | `"stable"` | no |
 | <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager). Must be a real mailbox — Let's Encrypt rate-limits RFC-2606 reserved domains (example.com, example.org, example.net, example.invalid, test, localhost) and does not issue certificates to them. | `string` | `"admin@example.com"` | no |
-| <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `4096` | no |
-| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace for workloads | `string` | `"default"` | no |
+| <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `6144` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace for the optional ops workload | `string` | `"ops"` | no |
 | <a name="input_namespace_pod_security_level"></a> [namespace\_pod\_security\_level](#input\_namespace\_pod\_security\_level) | Pod Security Standards level applied to module-managed namespaces (enforce + audit + warn). `baseline` is a safe default for most workloads. `restricted` is the strictest and may break Helm charts that require privileged pods (kube-prometheus-stack's node-exporter, for example). `privileged` effectively disables enforcement. | `string` | `"baseline"` | no |
 | <a name="input_namespaces"></a> [namespaces](#input\_namespaces) | List of additional namespaces to create | `list(string)` | ```[ "ops", "monitoring" ]``` | no |
 | <a name="input_nodes"></a> [nodes](#input\_nodes) | Number of nodes | `number` | `1` | no |
 | <a name="input_ops_image"></a> [ops\_image](#input\_ops\_image) | Image to use for the ops workload | `string` | `"alpine:3.20"` | no |
 | <a name="input_ops_storage_class_name"></a> [ops\_storage\_class\_name](#input\_ops\_storage\_class\_name) | StorageClass used by the ops StatefulSet's PVC. Default matches minikube's `default-storageclass` addon. If you drop that addon, either pin this to a StorageClass you install yourself or set this to `null` to rely on an externally-configured cluster default. | `string` | `"standard"` | no |
-| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | CIDR range for Pods (if supported by CNI) | `string` | `"100.72.0.0/13"` | no |
+| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | CIDR range for Pods (if supported by CNI) | `string` | `"10.244.0.0/16"` | no |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | CIDR range for Kubernetes Services (ClusterIP) | `string` | `"100.64.0.0/13"` | no |
 | <a name="input_traefik_version"></a> [traefik\_version](#input\_traefik\_version) | Traefik Helm chart version | `string` | `"34.2.0"` | no |
 
