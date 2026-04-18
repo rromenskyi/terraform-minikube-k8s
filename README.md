@@ -156,6 +156,7 @@ No modules.
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "ingress", "storage-provisioner", "metrics-server" ]``` | no |
 | <a name="input_apiserver_cert_extra_sans"></a> [apiserver\_cert\_extra\_sans](#input\_apiserver\_cert\_extra\_sans) | Additional Subject Alternative Names embedded in the apiserver certificate. The default covers minikube's docker driver node IP (`192.168.49.2`). When using qemu / hyperkit / kvm2 / vmware, run `minikube ip -p <cluster>` after bootstrap and extend this list with the driver-specific node IP. | `list(string)` | ```[ "localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2" ]``` | no |
+| <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Base domain used to derive default hostnames for Traefik dashboard (`traefik.<base>`) and Grafana (`grafana.<base>`). Defaults to `localhost` for local minikube usage; set to a real domain (e.g. `dev.example.com`) for remote access. | `string` | `"localhost"` | no |
 | <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.48"` | no |
 | <a name="input_cert_manager_version"></a> [cert\_manager\_version](#input\_cert\_manager\_version) | cert-manager Helm chart version | `string` | `"v1.16.1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the minikube cluster | `string` | `"tf-local"` | no |
@@ -206,5 +207,6 @@ No modules.
 | <a name="output_ops_statefulset_name"></a> [ops\_statefulset\_name](#output\_ops\_statefulset\_name) | Name of the ops StatefulSet (if created) |
 | <a name="output_pod_cidr"></a> [pod\_cidr](#output\_pod\_cidr) | Configured Pod CIDR |
 | <a name="output_service_cidr"></a> [service\_cidr](#output\_service\_cidr) | Configured Service CIDR |
+| <a name="output_traefik_dashboard_url"></a> [traefik\_dashboard\_url](#output\_traefik\_dashboard\_url) | Traefik dashboard URL (if enabled) |
 | <a name="output_traefik_enabled"></a> [traefik\_enabled](#output\_traefik\_enabled) | Whether Traefik is enabled |
 <!-- END_TF_DOCS -->

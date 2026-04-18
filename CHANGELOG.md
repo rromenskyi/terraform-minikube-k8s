@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `base_domain` variable (default: `"localhost"`). Traefik dashboard and Grafana hostnames are now derived as `traefik.<base_domain>` and `grafana.<base_domain>` instead of hardcoded `*.localhost`. Also surfaces a new `traefik_dashboard_url` output.
+
 ### Fixed
 - kube-prometheus-stack no longer creates its own Grafana Ingress. The chart-side `grafana.ingress.*` settings were stripped from the Helm release, so the only Ingress targeting `grafana.localhost` is now the Terraform-managed `kubernetes_ingress_v1.grafana` (which carries the required Traefik router annotations). Removes a duplicate Ingress with conflicting ownership on the same host.
 

@@ -52,7 +52,7 @@ resource "helm_release" "traefik" {
         dashboard = {
           enabled     = var.enable_traefik_dashboard
           entryPoints = ["web"]
-          matchRule   = "Host(`traefik.localhost`)"
+          matchRule   = "Host(`traefik.${var.base_domain}`)"
         }
       }
     })
