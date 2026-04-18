@@ -102,9 +102,16 @@ variable "service_cidr" {
 }
 
 variable "pod_cidr" {
+  # NOTE: minikube's Flannel addon hardcodes "Network": "10.244.0.0/16" in its
+  # kube-flannel-cfg ConfigMap and ignores kubeadm.pod-network-cidr. Setting
+  # this to anything outside 10.244.0.0/16 causes Flannel to crash ("subnet
+  # does not contain node PodCIDR") and leaves all new pods stuck in
+  # ContainerCreating. Keep at 10.244.0.0/16 until the Flannel ConfigMap is
+  # patched automatically during bootstrap to match the desired CGNAT range.
+  # TODO: switch default to "100.72.0.0/13" once Flannel wiring is fixed.
   description = "CIDR range for Pods (if supported by CNI)"
   type        = string
-  default     = "100.72.0.0/13"
+  default     = "10.244.0.0/16"
 
   validation {
     condition     = can(cidrhost(var.pod_cidr, 0))
