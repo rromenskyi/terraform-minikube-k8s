@@ -120,6 +120,12 @@ variable "cni" {
   default     = "calico"
 }
 
+variable "apiserver_cert_extra_sans" {
+  description = "Additional Subject Alternative Names embedded in the apiserver certificate. The default covers minikube's docker driver node IP (`192.168.49.2`). When using qemu / hyperkit / kvm2 / vmware, run `minikube ip -p <cluster>` after bootstrap and extend this list with the driver-specific node IP."
+  type        = list(string)
+  default     = ["localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2"]
+}
+
 variable "namespaces" {
   description = "List of additional namespaces to create"
   type        = list(string)
