@@ -23,7 +23,7 @@ resource "minikube_cluster" "this" {
     "kubeadm.service-cluster-ip-range=${var.service_cidr}",
     "kubeadm.cluster-dns=${var.dns_ip}",
     "kubelet.cluster-dns=${var.dns_ip}",
-    "kubeadm.apiserver-cert-extra-sans=localhost,127.0.0.1,10.0.0.1,192.168.49.2",
+    "kubeadm.apiserver-cert-extra-sans=${join(",", var.apiserver_cert_extra_sans)}",
   ])
 
   lifecycle {
