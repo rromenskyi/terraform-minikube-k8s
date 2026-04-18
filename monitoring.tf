@@ -7,6 +7,12 @@ resource "random_password" "grafana" {
 
   length  = 16
   special = false
+
+  # Pin regeneration to the cluster identity so provider-version bumps do not
+  # silently rotate the admin password and lock users out of Grafana.
+  keepers = {
+    cluster = var.cluster_name
+  }
 }
 
 resource "helm_release" "monitoring" {
@@ -16,7 +22,7 @@ resource "helm_release" "monitoring" {
   name             = "kube-prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
   chart            = "kube-prometheus-stack"
-  version          = "70.0.0" # Updated to newer version
+  version          = var.kube_prometheus_stack_version
   namespace        = "monitoring"
   create_namespace = true
 
