@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `kube_prometheus_stack_version` variable (default: `"70.0.0"`). Kubernetes monitoring chart version is no longer hardcoded — consistent with `traefik_version` and `cert_manager_version`
+- Second `validation` block on `letsencrypt_email` rejecting RFC-2606 reserved domains (example.com/org/net/invalid, test, localhost). Let's Encrypt rate-limits or rejects those; fail at plan instead of mid-issuance
+- `lifecycle.precondition` on `helm_release.cluster_issuers` requiring `enable_traefik = true`. The HTTP-01 solver template hardcodes ingress class `traefik`; with Traefik disabled the issuer would reference a non-existent class
+
+### Security
+- Pre-commit hooks extended with `terraform_trivy` (HIGH/CRITICAL severity gate for Terraform security findings), `gitleaks` (commit-time secret scanning), `detect-private-key`, and `check-merge-conflict`
+
+### Changed
+- `random_password.grafana` now pins `keepers = { cluster = var.cluster_name }`. Prevents silent password rotation — and Grafana lockout — on provider-version upgrades
+- `helm` provider requirement bumped from `~> 2.0` to `~> 2.17` (2.0-2.16 is end-of-life; 2.17 is the last v2 line)
 - `cluster_distribution` output (value: `"minikube"`) lets sibling-module consumers programmatically branch on which distribution is active without hardcoding the source path
 - `base_domain` variable (default: `"localhost"`). Traefik dashboard and Grafana hostnames are now derived as `traefik.<base_domain>` and `grafana.<base_domain>` instead of hardcoded `*.localhost`. Also surfaces a new `traefik_dashboard_url` output.
 

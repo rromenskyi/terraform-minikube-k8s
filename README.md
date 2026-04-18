@@ -115,7 +115,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
-| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.17 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.0 |
 | <a name="requirement_minikube"></a> [minikube](#requirement\_minikube) | ~> 0.5 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
@@ -171,8 +171,9 @@ No modules.
 | <a name="input_enable_traefik"></a> [enable\_traefik](#input\_enable\_traefik) | Deploy Traefik as Ingress controller via Helm | `bool` | `true` | no |
 | <a name="input_enable_traefik_dashboard"></a> [enable\_traefik\_dashboard](#input\_enable\_traefik\_dashboard) | Expose Traefik dashboard via IngressRoute | `bool` | `true` | no |
 | <a name="input_iso_urls"></a> [iso\_urls](#input\_iso\_urls) | List of ISO URLs to try | `list(string)` | ```[ "https://storage.googleapis.com/minikube/iso/minikube-v1.37.0-amd64.iso", "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso" ]``` | no |
+| <a name="input_kube_prometheus_stack_version"></a> [kube\_prometheus\_stack\_version](#input\_kube\_prometheus\_stack\_version) | kube-prometheus-stack Helm chart version | `string` | `"70.0.0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version for the Minikube cluster (for example `v1.30.0` or `stable`) | `string` | `"stable"` | no |
-| <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager) | `string` | `"admin@example.com"` | no |
+| <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager). Must be a real mailbox — Let's Encrypt rate-limits RFC-2606 reserved domains (example.com, example.org, example.net, example.invalid, test, localhost) and does not issue certificates to them. | `string` | `"admin@example.com"` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `4096` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace for workloads | `string` | `"default"` | no |
 | <a name="input_namespace_pod_security_level"></a> [namespace\_pod\_security\_level](#input\_namespace\_pod\_security\_level) | Pod Security Standards level applied to module-managed namespaces (enforce + audit + warn). `baseline` is a safe default for most workloads. `restricted` is the strictest and may break Helm charts that require privileged pods (kube-prometheus-stack's node-exporter, for example). `privileged` effectively disables enforcement. | `string` | `"baseline"` | no |
