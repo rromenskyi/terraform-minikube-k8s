@@ -27,8 +27,23 @@ resource "minikube_cluster" "this" {
   ])
 
   lifecycle {
+    # The minikube provider marks the attributes below as force-new, so editing
+    # any of them in a running cluster would silently trigger destroy+recreate
+    # and wipe workloads. Ignore drift here; reshaping these requires explicit
+    # `terraform taint minikube_cluster.this` followed by `terraform apply`, or
+    # `terraform destroy` + fresh apply. This is a deliberate "fail loud"
+    # guardrail, not laziness.
     ignore_changes = [
       iso_url,
+      addons,
+      base_image,
+      kubernetes_version,
+      extra_config,
+      cni,
+      driver,
+      nodes,
+      cpus,
+      memory,
     ]
   }
 }
