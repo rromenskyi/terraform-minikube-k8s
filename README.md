@@ -113,7 +113,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.0 |
@@ -123,7 +123,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.17.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.38.0 |
 | <a name="provider_minikube"></a> [minikube](#provider\_minikube) | 0.6.0 |
@@ -136,14 +136,16 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.cluster_issuers](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.monitoring](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.traefik](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [kubernetes_ingress_class_v1.traefik](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_class_v1) | resource |
 | [kubernetes_ingress_v1.grafana](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_v1) | resource |
+| [kubernetes_limit_range_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/limit_range_v1) | resource |
 | [kubernetes_namespace_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
+| [kubernetes_resource_quota_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/resource_quota_v1) | resource |
 | [kubernetes_stateful_set_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/stateful_set_v1) | resource |
 | [minikube_cluster.this](https://registry.terraform.io/providers/scott-the-programmer/minikube/latest/docs/resources/cluster) | resource |
 | [random_password.grafana](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
@@ -151,7 +153,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "ingress", "storage-provisioner", "metrics-server" ]``` | no |
 | <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.48"` | no |
 | <a name="input_cert_manager_version"></a> [cert\_manager\_version](#input\_cert\_manager\_version) | cert-manager Helm chart version | `string` | `"v1.16.1"` | no |
@@ -163,6 +165,7 @@ No modules.
 | <a name="input_driver"></a> [driver](#input\_driver) | Minikube driver (docker, qemu, hyperkit, etc) | `string` | `"docker"` | no |
 | <a name="input_enable_cert_manager"></a> [enable\_cert\_manager](#input\_enable\_cert\_manager) | Deploy cert-manager + Let's Encrypt ClusterIssuers | `bool` | `true` | no |
 | <a name="input_enable_monitoring"></a> [enable\_monitoring](#input\_enable\_monitoring) | Deploy Prometheus + Grafana via kube-prometheus-stack | `bool` | `true` | no |
+| <a name="input_enable_namespace_limits"></a> [enable\_namespace\_limits](#input\_enable\_namespace\_limits) | Apply a default `ResourceQuota` and `LimitRange` to each module-managed namespace. Disable only if you enforce quotas out-of-band. | `bool` | `true` | no |
 | <a name="input_enable_traefik"></a> [enable\_traefik](#input\_enable\_traefik) | Deploy Traefik as Ingress controller via Helm | `bool` | `true` | no |
 | <a name="input_enable_traefik_dashboard"></a> [enable\_traefik\_dashboard](#input\_enable\_traefik\_dashboard) | Expose Traefik dashboard via IngressRoute | `bool` | `true` | no |
 | <a name="input_iso_urls"></a> [iso\_urls](#input\_iso\_urls) | List of ISO URLs to try | `list(string)` | ```[ "https://storage.googleapis.com/minikube/iso/minikube-v1.37.0-amd64.iso", "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso" ]``` | no |
@@ -170,6 +173,7 @@ No modules.
 | <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager) | `string` | `"admin@example.com"` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `4096` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace for workloads | `string` | `"default"` | no |
+| <a name="input_namespace_pod_security_level"></a> [namespace\_pod\_security\_level](#input\_namespace\_pod\_security\_level) | Pod Security Standards level applied to module-managed namespaces (enforce + audit + warn). `baseline` is a safe default for most workloads. `restricted` is the strictest and may break Helm charts that require privileged pods (kube-prometheus-stack's node-exporter, for example). `privileged` effectively disables enforcement. | `string` | `"baseline"` | no |
 | <a name="input_namespaces"></a> [namespaces](#input\_namespaces) | List of additional namespaces to create | `list(string)` | ```[ "ops", "monitoring" ]``` | no |
 | <a name="input_nodes"></a> [nodes](#input\_nodes) | Number of nodes | `number` | `1` | no |
 | <a name="input_ops_image"></a> [ops\_image](#input\_ops\_image) | Image to use for the ops workload | `string` | `"alpine:3.20"` | no |
@@ -180,7 +184,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_access_instructions"></a> [access\_instructions](#output\_access\_instructions) | Helpful commands to interact with the cluster |
 | <a name="output_addons"></a> [addons](#output\_addons) | Enabled minikube addons |
 | <a name="output_cert_manager_enabled"></a> [cert\_manager\_enabled](#output\_cert\_manager\_enabled) | Whether cert-manager is enabled |
