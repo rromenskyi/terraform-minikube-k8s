@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- kube-prometheus-stack no longer creates its own Grafana Ingress. The chart-side `grafana.ingress.*` settings were stripped from the Helm release, so the only Ingress targeting `grafana.localhost` is now the Terraform-managed `kubernetes_ingress_v1.grafana` (which carries the required Traefik router annotations). Removes a duplicate Ingress with conflicting ownership on the same host.
+
 ### Added
 - `ops_storage_class_name` variable pins the StorageClass used by the ops StatefulSet's PVC (default: `"standard"`, matching minikube's `default-storageclass` addon). Removes the silent `Pending` PVC that would hang the workload if the default-storageclass addon were disabled.
 - `apiserver_cert_extra_sans` variable surfaces the apiserver cert SAN list. The default keeps `192.168.49.2` (minikube's docker-driver node IP) for backwards compatibility; users on qemu / hyperkit / kvm2 / vmware can now override with their driver-specific node IP instead of hitting a TLS handshake failure
