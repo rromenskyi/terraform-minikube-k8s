@@ -22,8 +22,12 @@ resource "minikube_cluster" "this" {
 
   # Networking: using CGNAT range (100.64.0.0/10) to avoid conflicts with real networks
   extra_config = toset([
-    # We already pass pod CIDR into kubeadm. Once minikube/provider flannel wiring
-    # stops hardcoding 10.244.0.0/16, this will start driving Pod IP allocation too.
+    # kubeadm.pod-network-cidr sets node.spec.podCIDR on the node object, but the
+    # minikube Flannel addon hardcodes "Network": "10.244.0.0/16" in its ConfigMap
+    # and does not read this value. Until the bootstrap patches the Flannel
+    # net-conf to match, pod_cidr MUST stay at "10.244.0.0/16" or Flannel crashes.
+    # TODO: patch kube-flannel-cfg ConfigMap in bootstrap Step 1.5 before Step 2,
+    # then switch to CGNAT "100.72.0.0/13" (module) / "100.80.0.0/12" (platform).
     "kubeadm.pod-network-cidr=${var.pod_cidr}",
     "kubeadm.service-cluster-ip-range=${var.service_cidr}",
     "kubeadm.cluster-dns=${var.dns_ip}",
