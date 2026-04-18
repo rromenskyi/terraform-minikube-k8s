@@ -84,6 +84,12 @@ variable "ops_image" {
   default     = "alpine:3.20"
 }
 
+variable "ops_storage_class_name" {
+  description = "StorageClass used by the ops StatefulSet's PVC. Default matches minikube's `default-storageclass` addon. If you drop that addon, either pin this to a StorageClass you install yourself or set this to `null` to rely on an externally-configured cluster default."
+  type        = string
+  default     = "standard"
+}
+
 # Networking
 variable "service_cidr" {
   description = "CIDR range for Kubernetes Services (ClusterIP)"

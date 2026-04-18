@@ -178,6 +178,7 @@ No modules.
 | <a name="input_namespaces"></a> [namespaces](#input\_namespaces) | List of additional namespaces to create | `list(string)` | ```[ "ops", "monitoring" ]``` | no |
 | <a name="input_nodes"></a> [nodes](#input\_nodes) | Number of nodes | `number` | `1` | no |
 | <a name="input_ops_image"></a> [ops\_image](#input\_ops\_image) | Image to use for the ops workload | `string` | `"alpine:3.20"` | no |
+| <a name="input_ops_storage_class_name"></a> [ops\_storage\_class\_name](#input\_ops\_storage\_class\_name) | StorageClass used by the ops StatefulSet's PVC. Default matches minikube's `default-storageclass` addon. If you drop that addon, either pin this to a StorageClass you install yourself or set this to `null` to rely on an externally-configured cluster default. | `string` | `"standard"` | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | CIDR range for Pods (if supported by CNI) | `string` | `"100.72.0.0/13"` | no |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | CIDR range for Kubernetes Services (ClusterIP) | `string` | `"100.64.0.0/13"` | no |
 | <a name="input_traefik_version"></a> [traefik\_version](#input\_traefik\_version) | Traefik Helm chart version | `string` | `"34.2.0"` | no |
