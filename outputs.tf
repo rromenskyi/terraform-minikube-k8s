@@ -3,6 +3,11 @@ output "cluster_name" {
   value       = var.cluster_name
 }
 
+output "cluster_distribution" {
+  description = "Which Kubernetes distribution this module provisions. Lets sibling-module consumers branch on distribution programmatically instead of hardcoding the source path."
+  value       = "minikube"
+}
+
 output "cluster_host" {
   description = "Kubernetes API server host"
   value       = minikube_cluster.this.host

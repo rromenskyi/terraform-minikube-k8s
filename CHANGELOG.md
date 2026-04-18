@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `cluster_distribution` output (value: `"minikube"`) lets sibling-module consumers programmatically branch on which distribution is active without hardcoding the source path
 - `base_domain` variable (default: `"localhost"`). Traefik dashboard and Grafana hostnames are now derived as `traefik.<base_domain>` and `grafana.<base_domain>` instead of hardcoded `*.localhost`. Also surfaces a new `traefik_dashboard_url` output.
 
 ### Fixed
