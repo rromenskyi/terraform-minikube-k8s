@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-04-18
+
 ### Added
 - `kube_prometheus_stack_version` variable (default: `"70.0.0"`). Kubernetes monitoring chart version is no longer hardcoded — consistent with `traefik_version` and `cert_manager_version`
 - Second `validation` block on `letsencrypt_email` rejecting RFC-2606 reserved domains (example.com/org/net/invalid, test, localhost). Let's Encrypt rate-limits or rejects those; fail at plan instead of mid-issuance
