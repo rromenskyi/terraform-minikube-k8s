@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `minikube_cluster.this` now ignores drift on force-new attributes (`addons`, `base_image`, `kubernetes_version`, `extra_config`, `cni`, `driver`, `nodes`, `cpus`, `memory` in addition to the existing `iso_url`) to stop silent destroy+recreate on unrelated variable edits. To reshape any of these, run `terraform taint minikube_cluster.this` + `terraform apply`, or destroy and reapply.
+
 ## [2.0.0] - 2026-04-14
 
 ### Breaking
