@@ -194,6 +194,7 @@ No modules.
 | <a name="output_client_certificate"></a> [client\_certificate](#output\_client\_certificate) | Client certificate for authentication |
 | <a name="output_client_key"></a> [client\_key](#output\_client\_key) | Client key for authentication |
 | <a name="output_cluster_ca_certificate"></a> [cluster\_ca\_certificate](#output\_cluster\_ca\_certificate) | Cluster CA certificate |
+| <a name="output_cluster_distribution"></a> [cluster\_distribution](#output\_cluster\_distribution) | Which Kubernetes distribution this module provisions. Lets sibling-module consumers branch on distribution programmatically instead of hardcoding the source path. |
 | <a name="output_cluster_host"></a> [cluster\_host](#output\_cluster\_host) | Kubernetes API server host |
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of the created minikube cluster |
 | <a name="output_dns_ip"></a> [dns\_ip](#output\_dns\_ip) | CoreDNS IP address |
