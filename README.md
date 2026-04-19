@@ -32,16 +32,14 @@ terraform init
 terraform apply
 ```
 
-`terraform apply` is expected to bootstrap Minikube itself and then converge the platform services in the same run.
+`terraform apply` bootstraps Minikube itself in a single phase. To layer
+Traefik, cert-manager, kube-prometheus-stack and the demo workload on
+top, compose this module with [`terraform-k8s-addons`](https://github.com/rromenskyi/terraform-k8s-addons)
+in the same root (see the `examples/demo/` stack below).
 
 After deployment, run in a separate terminal if you need a local LoadBalancer tunnel:
 ```bash
 minikube -p demo-cluster tunnel
-```
-
-**Get Grafana password:**
-```bash
-terraform output -json grafana_credentials | jq -r '.value.password'
 ```
 
 ---
@@ -49,10 +47,14 @@ terraform output -json grafana_credentials | jq -r '.value.password'
 ## What's Included
 
 - `cluster.tf` — Minikube cluster + networking (uses 100.64.0.0/10 CGNAT range)
-- `_providers.tf` — All provider configurations
-- `traefik.tf` — Traefik Ingress + Dashboard IngressRoute
-- `cert_manager.tf` — cert-manager + Let's Encrypt ClusterIssuers
-- `monitoring.tf` — kube-prometheus-stack (Prometheus + Grafana)
+- `_providers.tf` — minikube + local provider config (only what bootstrap needs)
+
+Anything platform-level (Traefik, cert-manager, kube-prometheus-stack,
+PodSecurity-labeled namespaces, demo ops StatefulSet) moved to the sibling
+`terraform-k8s-addons` module — consume it on top via
+`module "addons" { kubeconfig_path = module.k8s.kubeconfig_path ... }`.
+This module's only job is standing a Minikube cluster up and producing a
+kubeconfig — see the output signature at the bottom of this README.
 
 ## Examples
 
@@ -80,12 +82,16 @@ pre-commit run -a
 # View all outputs
 terraform output
 
-# Get Grafana password
-terraform output -json grafana_credentials | jq -r '.value.password'
+# Export kubeconfig for kubectl / helm
+eval "$(terraform output -raw kubeconfig_command)"
 
-# Open dashboards
+# Built-in minikube dashboard (addons = ["dashboard"] by default)
 minikube -p demo-cluster dashboard
 ```
+
+Grafana, the Traefik dashboard and similar platform UIs live on
+`terraform-k8s-addons` (and the stack it plugs into) — consult that
+module's README + `grafana_credentials` output once it's composed on top.
 
 **Note:** The CI pipeline will also run `terraform fmt`, `validate`, and `terraform-docs`.
 
@@ -115,19 +121,15 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
-| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.17 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.0 |
+| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.5 |
 | <a name="requirement_minikube"></a> [minikube](#requirement\_minikube) | ~> 0.5 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_helm"></a> [helm](#provider\_helm) | 2.17.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.38.0 |
+| <a name="provider_local"></a> [local](#provider\_local) | 2.8.0 |
 | <a name="provider_minikube"></a> [minikube](#provider\_minikube) | 0.6.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.8.1 |
 
 ## Modules
 
@@ -137,53 +139,27 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
-| [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [helm_release.cluster_issuers](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [helm_release.monitoring](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [helm_release.traefik](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [kubernetes_ingress_v1.grafana](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_v1) | resource |
-| [kubernetes_limit_range_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/limit_range_v1) | resource |
-| [kubernetes_namespace_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
-| [kubernetes_resource_quota_v1.namespaces](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/resource_quota_v1) | resource |
-| [kubernetes_service_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_v1) | resource |
-| [kubernetes_stateful_set_v1.ops](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/stateful_set_v1) | resource |
+| [local_sensitive_file.kubeconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
 | [minikube_cluster.this](https://registry.terraform.io/providers/scott-the-programmer/minikube/latest/docs/resources/cluster) | resource |
-| [random_password.grafana](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable | `list(string)` | ```[ "dashboard", "default-storageclass", "storage-provisioner", "metrics-server" ]``` | no |
+| <a name="input_addons"></a> [addons](#input\_addons) | List of minikube addons to enable. Ingress-related addons are intentionally absent — Traefik is installed via the sibling `terraform-k8s-addons` module. | `list(string)` | ```[ "dashboard", "default-storageclass", "storage-provisioner", "metrics-server" ]``` | no |
 | <a name="input_apiserver_cert_extra_sans"></a> [apiserver\_cert\_extra\_sans](#input\_apiserver\_cert\_extra\_sans) | Additional Subject Alternative Names embedded in the apiserver certificate. The default covers minikube's docker driver node IP (`192.168.49.2`). When using qemu / hyperkit / kvm2 / vmware, run `minikube ip -p <cluster>` after bootstrap and extend this list with the driver-specific node IP. | `list(string)` | ```[ "localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2" ]``` | no |
-| <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Base domain used to derive default hostnames for Traefik dashboard (`traefik.<base>`) and Grafana (`grafana.<base>`). Defaults to `localhost` for local minikube usage; set to a real domain (e.g. `dev.example.com`) for remote access. | `string` | `"localhost"` | no |
 | <a name="input_base_image"></a> [base\_image](#input\_base\_image) | Base image for minikube | `string` | `"gcr.io/k8s-minikube/kicbase:v0.0.50"` | no |
-| <a name="input_cert_manager_version"></a> [cert\_manager\_version](#input\_cert\_manager\_version) | cert-manager Helm chart version | `string` | `"v1.16.1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the minikube cluster | `string` | `"tf-local"` | no |
 | <a name="input_cni"></a> [cni](#input\_cni) | CNI to use (bridge, calico, cilium, flannel, etc). Flannel is recommended on the macOS Docker driver. | `string` | `"calico"` | no |
 | <a name="input_cpus"></a> [cpus](#input\_cpus) | Number of CPUs | `number` | `6` | no |
-| <a name="input_create_ops_workload"></a> [create\_ops\_workload](#input\_create\_ops\_workload) | Whether to create the ops StatefulSet workload | `bool` | `true` | no |
 | <a name="input_dns_ip"></a> [dns\_ip](#input\_dns\_ip) | IP address for CoreDNS/kube-dns (must be inside service\_cidr) | `string` | `"100.64.0.10"` | no |
 | <a name="input_driver"></a> [driver](#input\_driver) | Minikube driver (docker, qemu, hyperkit, etc) | `string` | `"docker"` | no |
-| <a name="input_enable_cert_manager"></a> [enable\_cert\_manager](#input\_enable\_cert\_manager) | Deploy cert-manager + Let's Encrypt ClusterIssuers | `bool` | `true` | no |
-| <a name="input_enable_monitoring"></a> [enable\_monitoring](#input\_enable\_monitoring) | Deploy Prometheus + Grafana via kube-prometheus-stack | `bool` | `true` | no |
-| <a name="input_enable_namespace_limits"></a> [enable\_namespace\_limits](#input\_enable\_namespace\_limits) | Apply a default `ResourceQuota` and `LimitRange` to each module-managed namespace. Disable only if you enforce quotas out-of-band. | `bool` | `true` | no |
-| <a name="input_enable_traefik"></a> [enable\_traefik](#input\_enable\_traefik) | Deploy Traefik as Ingress controller via Helm | `bool` | `true` | no |
-| <a name="input_enable_traefik_dashboard"></a> [enable\_traefik\_dashboard](#input\_enable\_traefik\_dashboard) | Expose Traefik dashboard via IngressRoute | `bool` | `true` | no |
 | <a name="input_iso_urls"></a> [iso\_urls](#input\_iso\_urls) | List of ISO URLs to try | `list(string)` | ```[ "https://storage.googleapis.com/minikube/iso/minikube-v1.37.0-amd64.iso", "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso" ]``` | no |
-| <a name="input_kube_prometheus_stack_version"></a> [kube\_prometheus\_stack\_version](#input\_kube\_prometheus\_stack\_version) | kube-prometheus-stack Helm chart version | `string` | `"70.0.0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version for the Minikube cluster (for example `v1.30.0` or `stable`) | `string` | `"stable"` | no |
-| <a name="input_letsencrypt_email"></a> [letsencrypt\_email](#input\_letsencrypt\_email) | Email for Let's Encrypt registration (required for cert-manager). Must be a real mailbox — Let's Encrypt rate-limits RFC-2606 reserved domains (example.com, example.org, example.net, example.invalid, test, localhost) and does not issue certificates to them. | `string` | `"admin@example.com"` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `6144` | no |
-| <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace for the optional ops workload | `string` | `"ops"` | no |
-| <a name="input_namespace_pod_security_level"></a> [namespace\_pod\_security\_level](#input\_namespace\_pod\_security\_level) | Pod Security Standards level applied to module-managed namespaces (enforce + audit + warn). `baseline` is a safe default for most workloads. `restricted` is the strictest and may break Helm charts that require privileged pods (kube-prometheus-stack's node-exporter, for example). `privileged` effectively disables enforcement. | `string` | `"baseline"` | no |
-| <a name="input_namespaces"></a> [namespaces](#input\_namespaces) | List of additional namespaces to create | `list(string)` | ```[ "ops", "monitoring" ]``` | no |
 | <a name="input_nodes"></a> [nodes](#input\_nodes) | Number of nodes | `number` | `1` | no |
-| <a name="input_ops_image"></a> [ops\_image](#input\_ops\_image) | Image to use for the ops workload | `string` | `"alpine:3.20"` | no |
-| <a name="input_ops_storage_class_name"></a> [ops\_storage\_class\_name](#input\_ops\_storage\_class\_name) | StorageClass used by the ops StatefulSet's PVC. Default matches minikube's `default-storageclass` addon. If you drop that addon, either pin this to a StorageClass you install yourself or set this to `null` to rely on an externally-configured cluster default. | `string` | `"standard"` | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | CIDR range for Pods (if supported by CNI) | `string` | `"10.244.0.0/16"` | no |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | CIDR range for Kubernetes Services (ClusterIP) | `string` | `"100.64.0.0/13"` | no |
-| <a name="input_traefik_version"></a> [traefik\_version](#input\_traefik\_version) | Traefik Helm chart version | `string` | `"34.2.0"` | no |
 
 ## Outputs
 
@@ -191,24 +167,15 @@ No modules.
 | ---- | ----------- |
 | <a name="output_access_instructions"></a> [access\_instructions](#output\_access\_instructions) | Helpful commands to interact with the cluster |
 | <a name="output_addons"></a> [addons](#output\_addons) | Enabled minikube addons |
-| <a name="output_cert_manager_enabled"></a> [cert\_manager\_enabled](#output\_cert\_manager\_enabled) | Whether cert-manager is enabled |
-| <a name="output_client_certificate"></a> [client\_certificate](#output\_client\_certificate) | Client certificate for authentication |
-| <a name="output_client_key"></a> [client\_key](#output\_client\_key) | Client key for authentication |
-| <a name="output_cluster_ca_certificate"></a> [cluster\_ca\_certificate](#output\_cluster\_ca\_certificate) | Cluster CA certificate |
-| <a name="output_cluster_distribution"></a> [cluster\_distribution](#output\_cluster\_distribution) | Which Kubernetes distribution this module provisions. Lets sibling-module consumers branch on distribution programmatically instead of hardcoding the source path. |
+| <a name="output_client_certificate"></a> [client\_certificate](#output\_client\_certificate) | Client certificate (PEM) for authentication |
+| <a name="output_client_key"></a> [client\_key](#output\_client\_key) | Client key (PEM) for authentication |
+| <a name="output_cluster_ca_certificate"></a> [cluster\_ca\_certificate](#output\_cluster\_ca\_certificate) | Cluster CA certificate (PEM) |
+| <a name="output_cluster_distribution"></a> [cluster\_distribution](#output\_cluster\_distribution) | Which Kubernetes distribution this module provisions. Lets consumer modules (e.g. `terraform-k8s-addons`) branch on distribution programmatically instead of hardcoding a source path. |
 | <a name="output_cluster_host"></a> [cluster\_host](#output\_cluster\_host) | Kubernetes API server host |
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of the created minikube cluster |
 | <a name="output_dns_ip"></a> [dns\_ip](#output\_dns\_ip) | CoreDNS IP address |
-| <a name="output_grafana_credentials"></a> [grafana\_credentials](#output\_grafana\_credentials) | Grafana login credentials (password is randomly generated and stored in Terraform state) |
-| <a name="output_grafana_url"></a> [grafana\_url](#output\_grafana\_url) | Grafana URL |
-| <a name="output_ingress_class"></a> [ingress\_class](#output\_ingress\_class) | IngressClass name (Traefik) |
-| <a name="output_kubeconfig_command"></a> [kubeconfig\_command](#output\_kubeconfig\_command) | Command to get kubeconfig for this cluster |
-| <a name="output_kubeconfig_path"></a> [kubeconfig\_path](#output\_kubeconfig\_path) | Typical path to the kubeconfig file |
-| <a name="output_monitoring_enabled"></a> [monitoring\_enabled](#output\_monitoring\_enabled) | Whether Prometheus + Grafana stack is enabled |
-| <a name="output_namespaces"></a> [namespaces](#output\_namespaces) | Created namespaces |
-| <a name="output_ops_statefulset_name"></a> [ops\_statefulset\_name](#output\_ops\_statefulset\_name) | Name of the ops StatefulSet (if created) |
+| <a name="output_kubeconfig_command"></a> [kubeconfig\_command](#output\_kubeconfig\_command) | Shell command to export this cluster's kubeconfig for kubectl/helm |
+| <a name="output_kubeconfig_path"></a> [kubeconfig\_path](#output\_kubeconfig\_path) | Local path to the composed kubeconfig file for this cluster. Wire this into `module "addons" { kubeconfig_path = module.k8s.kubeconfig_path }` in the platform root. The value references `local_sensitive_file.kubeconfig.filename` (not the `local.kubeconfig_path` literal) so the Terraform dependency graph makes downstream consumers wait for the file to land on disk before they try to open it. |
 | <a name="output_pod_cidr"></a> [pod\_cidr](#output\_pod\_cidr) | Configured Pod CIDR |
 | <a name="output_service_cidr"></a> [service\_cidr](#output\_service\_cidr) | Configured Service CIDR |
-| <a name="output_traefik_dashboard_url"></a> [traefik\_dashboard\_url](#output\_traefik\_dashboard\_url) | Traefik dashboard URL (if enabled) |
-| <a name="output_traefik_enabled"></a> [traefik\_enabled](#output\_traefik\_enabled) | Whether Traefik is enabled |
 <!-- END_TF_DOCS -->
