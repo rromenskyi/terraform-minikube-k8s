@@ -22,6 +22,55 @@ Includes a modern stack for local development and experimentation:
 
 ---
 
+## Host Prerequisites
+
+This module runs Minikube with the `docker` driver by default, which places
+the Kubernetes node inside a Linux container on the host. Two host-level
+settings have to be in place before `terraform apply`:
+
+### 1. Kernel inotify limits
+
+The default Ubuntu / Debian limit of `fs.inotify.max_user_instances = 128`
+is too low for a realistic Kubernetes node. kube-apiserver, kube-controller-
+manager, kube-proxy, coredns, kubelet and every running workload open their
+own inotify handles; the bootstrap hits the ceiling and you get
+`too many open files` errors in the controller-manager log, followed by
+kube-proxy failing to program iptables, followed by Service NAT / DNS dying
+cluster-wide. The cluster *looks* like it boots and then degrades several
+minutes in — easy to chase down the wrong rabbit hole.
+
+Raise the limits once per host. Files in `/etc/sysctl.d/` are applied
+automatically by `systemd-sysctl.service` on every boot on any systemd-based
+distribution.
+
+| Distribution family | Command |
+| --- | --- |
+| Ubuntu / Debian / RHEL / Fedora / Rocky / Arch (systemd) | `sudo tee /etc/sysctl.d/99-kubernetes-inotify.conf <<'EOF'`<br>`fs.inotify.max_user_instances = 8192`<br>`fs.inotify.max_user_watches = 524288`<br>`EOF`<br>`sudo sysctl --system` |
+| Alpine / Void / OpenRC | `echo 'fs.inotify.max_user_instances=8192' \| sudo tee -a /etc/sysctl.conf`<br>`echo 'fs.inotify.max_user_watches=524288' \| sudo tee -a /etc/sysctl.conf`<br>`sudo rc-service sysctl restart` |
+
+Verify with `sysctl fs.inotify.max_user_instances fs.inotify.max_user_watches`
+(should show `8192` / `524288`).
+
+### 2. Docker group membership
+
+The minikube CLI connects to `/var/run/docker.sock` without elevation, so the
+invoking user must be in the `docker` group. Running Terraform via `sudo` is
+not an acceptable substitute — the state file and provider caches would end
+up root-owned.
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker            # pick the new group up in the current shell;
+                         # alternatively, log out and back in
+```
+
+> **Security note:** membership in the `docker` group is effectively
+> root-equivalent on the host (a user in that group can mount the host FS
+> into a container and read/write as root). This is a conscious tradeoff for
+> a developer workstation; do not apply it to a shared server.
+
+---
+
 ## Quick Start
 
 1. Deploy the full demo:
