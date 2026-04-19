@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-04-18
+
+### Fixed
+- cert-manager `helm_release` now passes `commonLabels` under `global.` instead of silently omitting it. The previous code dropped `commonLabels` because the chart's `values.schema.json` (v1.14+) rejects it at the root, but the chart *does* accept it under `$defs.helm-values.global.properties.commonLabels`. Our labels now reach the cert-manager objects as intended instead of being silently lost, matching the sibling `terraform-k3s-k8s` module's behavior.
+
 ## [2.1.0] - 2026-04-18
 
 ### Added
