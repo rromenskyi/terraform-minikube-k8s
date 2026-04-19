@@ -17,8 +17,18 @@ resource "helm_release" "cert_manager" {
     value = "true"
   }
 
-  # commonLabels is intentionally omitted: cert-manager's JSON Schema validation
-  # rejects unknown top-level keys starting from v1.14.
+  values = [
+    # cert-manager's values.schema.json (v1.14+) keeps `commonLabels` under
+    # `global.`, not at the root. Passing it at the root is rejected with
+    # "Additional property commonLabels is not allowed" and the release fails
+    # to plan. The local `cluster_issuers` chart below is our own — its
+    # schema stays flat.
+    yamlencode({
+      global = {
+        commonLabels = local.common_labels
+      }
+    })
+  ]
 }
 
 # Let's Encrypt ClusterIssuers are installed through a small local Helm chart.
