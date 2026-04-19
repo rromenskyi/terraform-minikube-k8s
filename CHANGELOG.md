@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-04-18
+
+### Breaking
+- The addon layer has been lifted out of this module into the new [`terraform-k8s-addons`](https://github.com/rromenskyi/terraform-k8s-addons) sibling. This module is now cluster-bootstrap only — it starts minikube, writes a kubeconfig, and exposes the same signature as `terraform-k3s-k8s` so either can drive the shared addons layer on top. Resources removed (moved to `terraform-k8s-addons`): Traefik `helm_release`, cert-manager `helm_release` + local `cert-manager-cluster-issuers` chart, kube-prometheus-stack `helm_release` + `random_password.grafana` + `kubernetes_ingress_v1.grafana`, PodSecurity-labeled namespaces + default `ResourceQuota` + `LimitRange`, demo `ops` `StatefulSet`. Variables removed: `enable_traefik`, `enable_traefik_dashboard`, `enable_cert_manager`, `enable_monitoring`, `create_ops_workload`, `namespaces`, `namespace`, `namespace_pod_security_level`, `enable_namespace_limits`, `base_domain`, `letsencrypt_email`, `traefik_version`, `cert_manager_version`, `kube_prometheus_stack_version`, `ops_image`, `ops_storage_class_name`, `host_volume_path`. Outputs removed: `grafana_credentials`, `ingress_class`, `traefik_dashboard_url`, `grafana_url`, `namespaces`, `ops_statefulset_name`, `traefik_enabled`, `cert_manager_enabled`, `monitoring_enabled`. Migrating from v2.x: keep your cluster-shape inputs (`cluster_name`, `kubernetes_version`, `pod_cidr`, `service_cidr`, `dns_ip`, `cni`, `memory`, `cpus`, `disk_size`) as-is, and add a `module "addons"` block with `kubeconfig_path = module.minikube.kubeconfig_path` + the addon flags that used to live on this module.
+
 ## [2.1.1] - 2026-04-18
 
 ### Fixed

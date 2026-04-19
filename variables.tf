@@ -34,13 +34,13 @@ variable "nodes" {
 }
 
 variable "addons" {
-  description = "List of minikube addons to enable"
+  description = "List of minikube addons to enable. Ingress-related addons are intentionally absent — Traefik is installed via the sibling `terraform-k8s-addons` module."
   type        = list(string)
   default = [
     "dashboard",
     "default-storageclass",
     "storage-provisioner",
-    "metrics-server"
+    "metrics-server",
   ]
 }
 
@@ -61,35 +61,14 @@ variable "iso_urls" {
   type        = list(string)
   default = [
     "https://storage.googleapis.com/minikube/iso/minikube-v1.37.0-amd64.iso",
-    "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso"
+    "https://github.com/kubernetes/minikube/releases/download/v1.37.0/minikube-v1.37.0-amd64.iso",
   ]
 }
 
-variable "create_ops_workload" {
-  description = "Whether to create the ops StatefulSet workload"
-  type        = bool
-  default     = true
-}
-
-variable "namespace" {
-  description = "Namespace for the optional ops workload"
-  type        = string
-  default     = "ops"
-}
-
-variable "ops_image" {
-  description = "Image to use for the ops workload"
-  type        = string
-  default     = "alpine:3.20"
-}
-
-variable "ops_storage_class_name" {
-  description = "StorageClass used by the ops StatefulSet's PVC. Default matches minikube's `default-storageclass` addon. If you drop that addon, either pin this to a StorageClass you install yourself or set this to `null` to rely on an externally-configured cluster default."
-  type        = string
-  default     = "standard"
-}
-
+# --------------------------------------------------------------------------
 # Networking
+# --------------------------------------------------------------------------
+
 variable "service_cidr" {
   description = "CIDR range for Kubernetes Services (ClusterIP)"
   type        = string
@@ -125,7 +104,6 @@ variable "dns_ip" {
   default     = "100.64.0.10"
 }
 
-# Advanced configuration
 variable "cni" {
   description = "CNI to use (bridge, calico, cilium, flannel, etc). Flannel is recommended on the macOS Docker driver."
   type        = string
@@ -137,97 +115,3 @@ variable "apiserver_cert_extra_sans" {
   type        = list(string)
   default     = ["localhost", "127.0.0.1", "10.0.0.1", "192.168.49.2"]
 }
-
-variable "namespaces" {
-  description = "List of additional namespaces to create"
-  type        = list(string)
-  default     = ["ops", "monitoring"]
-}
-
-variable "namespace_pod_security_level" {
-  description = "Pod Security Standards level applied to module-managed namespaces (enforce + audit + warn). `baseline` is a safe default for most workloads. `restricted` is the strictest and may break Helm charts that require privileged pods (kube-prometheus-stack's node-exporter, for example). `privileged` effectively disables enforcement."
-  type        = string
-  default     = "baseline"
-
-  validation {
-    condition     = contains(["privileged", "baseline", "restricted"], var.namespace_pod_security_level)
-    error_message = "namespace_pod_security_level must be one of: privileged, baseline, restricted."
-  }
-}
-
-variable "enable_namespace_limits" {
-  description = "Apply a default `ResourceQuota` and `LimitRange` to each module-managed namespace. Disable only if you enforce quotas out-of-band."
-  type        = bool
-  default     = true
-}
-
-variable "base_domain" {
-  description = "Base domain used to derive default hostnames for Traefik dashboard (`traefik.<base>`) and Grafana (`grafana.<base>`). Defaults to `localhost` for local minikube usage; set to a real domain (e.g. `dev.example.com`) for remote access."
-  type        = string
-  default     = "localhost"
-
-  validation {
-    condition     = can(regex("^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$", var.base_domain))
-    error_message = "base_domain must be a valid DNS label sequence (lowercase alphanumerics, dots, hyphens)."
-  }
-}
-
-variable "enable_traefik" {
-  description = "Deploy Traefik as Ingress controller via Helm"
-  type        = bool
-  default     = true
-}
-
-variable "enable_cert_manager" {
-  description = "Deploy cert-manager + Let's Encrypt ClusterIssuers"
-  type        = bool
-  default     = true
-}
-
-variable "letsencrypt_email" {
-  description = "Email for Let's Encrypt registration (required for cert-manager). Must be a real mailbox — Let's Encrypt rate-limits RFC-2606 reserved domains (example.com, example.org, example.net, example.invalid, test, localhost) and does not issue certificates to them."
-  type        = string
-  default     = "admin@example.com"
-
-  validation {
-    condition     = can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.letsencrypt_email))
-    error_message = "letsencrypt_email must be a valid email address."
-  }
-
-  validation {
-    condition     = !can(regex("@(example\\.(com|org|net|invalid)|test|localhost)$", var.letsencrypt_email))
-    error_message = "letsencrypt_email must not use an RFC-2606 reserved domain (example.com, example.org, example.net, example.invalid, test, localhost) — Let's Encrypt rejects those."
-  }
-}
-
-variable "traefik_version" {
-  description = "Traefik Helm chart version"
-  type        = string
-  default     = "34.2.0"
-}
-
-variable "cert_manager_version" {
-  description = "cert-manager Helm chart version"
-  type        = string
-  default     = "v1.16.1"
-}
-
-variable "kube_prometheus_stack_version" {
-  description = "kube-prometheus-stack Helm chart version"
-  type        = string
-  default     = "70.0.0"
-}
-
-variable "enable_traefik_dashboard" {
-  description = "Expose Traefik dashboard via IngressRoute"
-  type        = bool
-  default     = true
-}
-
-variable "enable_monitoring" {
-  description = "Deploy Prometheus + Grafana via kube-prometheus-stack"
-  type        = bool
-  default     = true
-}
-
-# Validation blocks (added to original variable definitions above)

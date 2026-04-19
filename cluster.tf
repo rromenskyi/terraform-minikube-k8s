@@ -62,3 +62,13 @@ resource "minikube_cluster" "this" {
     ]
   }
 }
+
+# Compose the cluster kubeconfig from the provider's outputs and drop it at
+# a known path. Consumer modules (notably `terraform-k8s-addons`) read it
+# via `config_path`, keeping the distribution-agnostic contract uniform
+# across `terraform-minikube-k8s` and `terraform-k3s-k8s`.
+resource "local_sensitive_file" "kubeconfig" {
+  filename        = local.kubeconfig_path
+  content         = local.kubeconfig_yaml
+  file_permission = "0600"
+}
