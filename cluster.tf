@@ -24,10 +24,10 @@ resource "minikube_cluster" "this" {
   extra_config = toset([
     # kubeadm.pod-network-cidr sets node.spec.podCIDR on the node object, but the
     # minikube Flannel addon hardcodes "Network": "10.244.0.0/16" in its ConfigMap
-    # and does not read this value. Until the bootstrap patches the Flannel
-    # net-conf to match, pod_cidr MUST stay at "10.244.0.0/16" or Flannel crashes.
-    # TODO: patch kube-flannel-cfg ConfigMap in bootstrap Step 1.5 before Step 2,
-    # then switch to CGNAT "100.72.0.0/13" (module) / "100.80.0.0/12" (platform).
+    # and does not read this value. pod_cidr MUST stay at "10.244.0.0/16" or
+    # Flannel crashes with "subnet does not contain node PodCIDR" and new pods
+    # are stuck in ContainerCreating. The k3s sibling does not have this
+    # limitation because k3s' flannel reads CLI flags directly.
     "kubeadm.pod-network-cidr=${var.pod_cidr}",
     "kubeadm.service-cluster-ip-range=${var.service_cidr}",
     "kubeadm.cluster-dns=${var.dns_ip}",
