@@ -70,9 +70,9 @@ variable "iso_urls" {
 # --------------------------------------------------------------------------
 
 variable "service_cidr" {
-  description = "CIDR range for Kubernetes Services (ClusterIP)"
+  description = "CIDR range for Kubernetes Services (ClusterIP). Defaults to a /20 slice of the RFC 6598 CGNAT space (100.64.0.0/10) — 4094 IPs, ample for a single-node test cluster, and cleanly disjoint from RFC 1918 ranges any host networking might be using."
   type        = string
-  default     = "100.64.0.0/13"
+  default     = "100.64.0.0/20"
 
   validation {
     condition     = can(cidrhost(var.service_cidr, 0))
@@ -81,15 +81,9 @@ variable "service_cidr" {
 }
 
 variable "pod_cidr" {
-  # NOTE: minikube's Flannel addon hardcodes "Network": "10.244.0.0/16" in its
-  # kube-flannel-cfg ConfigMap and ignores kubeadm.pod-network-cidr. Setting
-  # this to anything outside 10.244.0.0/16 causes Flannel to crash ("subnet
-  # does not contain node PodCIDR") and leaves all new pods stuck in
-  # ContainerCreating. This default is load-bearing — changing it requires
-  # coincidentally patching the Flannel ConfigMap (see cluster.tf).
-  description = "CIDR range for Pods (if supported by CNI)"
+  description = "CIDR range for Pods, written into Flannel's `net-conf.json` (see flannel.tf). Defaults to `100.72.0.0/16` — a /16 in the RFC 6598 CGNAT space (100.64.0.0/10), matching both the idiom `size-of-a-big-cluster pod range` (65k IPs, 256 possible /24 per-node slices × 254 pods each) and the 100.72.x.x family that `terraform-k3s-k8s` uses by default, so the two cluster modules speak the same IP vocabulary. Critically, the default is NOT 10.244.0.0/16 — kicbase's bundled podman network claims 10.244.0.1/16 and the collision breaks in-cluster Service NAT within minutes of bootstrap."
   type        = string
-  default     = "10.244.0.0/16"
+  default     = "100.72.0.0/16"
 
   validation {
     condition     = can(cidrhost(var.pod_cidr, 0))
@@ -98,15 +92,20 @@ variable "pod_cidr" {
 }
 
 variable "dns_ip" {
-  description = "IP address for CoreDNS/kube-dns (must be inside service_cidr)"
+  description = "IP address for CoreDNS/kube-dns (must be inside service_cidr)."
   type        = string
   default     = "100.64.0.10"
 }
 
-variable "cni" {
-  description = "CNI to use (bridge, calico, cilium, flannel, etc). Flannel is recommended on the macOS Docker driver."
+variable "flannel_version" {
+  description = "Flannel release to pull the installation manifest from (https://github.com/flannel-io/flannel/releases). The module fetches `kube-flannel.yml` at this tag, rewrites the hardcoded 10.244.0.0/16 in the bundled ConfigMap to `var.pod_cidr`, and applies every document via the kubectl provider."
   type        = string
-  default     = "calico"
+  default     = "v0.26.7"
+
+  validation {
+    condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.flannel_version))
+    error_message = "flannel_version must be a semver tag like `v0.26.7`."
+  }
 }
 
 variable "apiserver_cert_extra_sans" {
