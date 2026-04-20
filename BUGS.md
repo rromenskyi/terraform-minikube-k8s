@@ -3,40 +3,52 @@
 Discovered during a full end-to-end bootstrap against the Docker driver on
 Ubuntu 24.04 running a k3s cluster in parallel (shared host, shared kernel).
 
-## 1. Kicbase's podman CNI bridge races with Flannel at initial boot
+## 1. Kicbase's bundled podman stack fights Flannel for `10.244.0.1`
 
-`gcr.io/k8s-minikube/kicbase` ships `/etc/cni/net.d/87-podman-bridge.conflist`
-with its bridge `cni-podman0` configured for subnet **`10.244.0.0/16`** —
-exactly the subnet Flannel claims on `cni0` (`10.244.0.1/24`).
+`gcr.io/k8s-minikube/kicbase` bakes in the full podman runtime (see
+[kubernetes/minikube `deploy/kicbase/Dockerfile`](https://github.com/kubernetes/minikube/blob/master/deploy/kicbase/Dockerfile)
+— `clean-install podman catatonit crun` + `systemctl enable podman.socket`).
+It is there for the `--driver=podman` code path and for operators who
+`minikube ssh` in to run `podman` by hand. On `--driver=docker` stacks
+it is unused — and actively harmful.
 
-The race: kubeadm's initial coredns install runs BEFORE Flannel's
-DaemonSet drops `10-flannel.conflist`. During that window, the podman
-conflist is the only CNI config available → kubelet uses it → `cni-podman0`
-bridge is created with `10.244.0.1`. Then Flannel starts, brings up
-`cni0` also at `10.244.0.1/24`. Two interfaces fight over the same IP.
-ARP goes non-deterministic; a few minutes into the bootstrap, in-cluster
-Service NAT degrades (`dial tcp 100.64.0.1:443: no route to host` from
-coredns / metrics-server / kubernetes-dashboard).
+**The harm chain:** `podman.socket` is a systemd socket-activation unit
+listening on `/run/podman/podman.sock`. Anything pinging that socket
+(containerd CNI-reload loops, crictl probes, kubelet probing its known
+runtime sockets) wakes `podman.service`. `podman.service` on first start
+creates its default network `podman` — a bridge called `cni-podman0`
+with `10.244.0.1/16`, the SAME address Flannel wants on `cni0`
+(`10.244.0.1/24`). ARP goes non-deterministic, then a few minutes into
+the bootstrap in-cluster Service NAT collapses: coredns, metrics-server,
+kubernetes-dashboard loop on
+`dial tcp 100.64.0.1:443: no route to host`.
 
-The bug is in `kicbase` packaging (see upstream
-[minikube#11194](https://github.com/kubernetes/minikube/issues/11194)
-and [minikube#15797](https://github.com/kubernetes/minikube/issues/15797)),
-which has been open since 2021. Minikube's own start process renames
-the conflist to `*.mk_disabled`, but the *bridge* was already created by
-the time that runs, so the interface persists and keeps its IP.
+We tried the half-measures first: disabling the `87-podman-bridge.conflist`
+by renaming to `.disabled`, then `rm`-ing it, then `systemctl restart
+containerd` to flush its CNI plugin cache (per upstream
+[minikube#11194](https://github.com/kubernetes/minikube/issues/11194),
+[minikube#8480](https://github.com/kubernetes/minikube/issues/8480),
+[minikube#15797](https://github.com/kubernetes/minikube/issues/15797)).
+Each one still let the bridge come back a few minutes later, on a fresh
+Mac cluster identically to Linux.
 
 **Current consumer workaround** (in `terraform-minikube-platform/tf`
-`bootstrap-minikube` subcommand, Step 1.5): after `minikube start` succeeds,
-immediately `ip addr flush dev cni-podman0 && ip link set cni-podman0 down`.
-This disarms the bridge without trying to delete it (deletion fails while
-it still holds slave veths from the kubeadm coredns pod). Flannel's `cni0`
-then wins the 10.244.0.1 address unopposed.
+`bootstrap-minikube` subcommand, Step 1.5): after `minikube start`
+succeeds, nuke the podman stack inside the kicbase container — one
+`docker exec` that disables `podman.socket`, removes `/usr/bin/podman`
+and `/etc/containers/networks` + `/var/lib/containers/storage/networks`
++ `/var/lib/cni/networks/podman` + `/etc/cni/net.d/87-podman-bridge.conflist`,
+then tears down the bridge if it already exists. No socket, no binary,
+no network DB means there is nothing to regenerate it. Trade-off: inside
+this specific kicbase node `minikube ssh -- podman run …` and
+`--driver=podman` no longer work; on a `--driver=docker` stack neither
+is used.
 
-**Proposed fix inside this module:** add a `post_start` provisioner (or
-a small resource chain) that performs the same disarm inside the minikube
-container, so consumers don't have to script Step 1.5 themselves.
-Alternative: publish a custom kicbase with the podman conflist removed,
-and make it the module default.
+**Proposed fix inside this module:** run the same podman purge as a
+post-`minikube_cluster.this` `null_resource` provisioner so consumers
+don't have to script Step 1.5 themselves. Alternative: publish a
+custom kicbase without the podman package, make it the module default
+via `var.base_image`.
 
 ## 2. Host prerequisites need module-side validation
 
