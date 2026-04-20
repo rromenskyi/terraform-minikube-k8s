@@ -8,26 +8,32 @@ resource "minikube_cluster" "this" {
   nodes              = var.nodes
   cpus               = var.cpus
   memory             = var.memory
-  cni                = var.cni
   network            = "builtin"
   container_runtime  = "docker"
   base_image         = var.base_image
   kubernetes_version = var.kubernetes_version
   iso_url            = var.iso_urls
 
+  # CNI is pinned to "false" and owned by this module's `flannel.tf` instead.
+  # Minikube's `flannel` built-in addon hardcodes `"Network": "10.244.0.0/16"`
+  # into its ConfigMap, IGNORES `kubeadm.pod-network-cidr`, and the resulting
+  # 10.244.0.1 gateway collides with kicbase's bundled podman bridge
+  # (`cni-podman0` same IP) — coredns/metrics-server get "no route to host"
+  # on in-cluster Service NAT a few minutes into every bootstrap. Letting
+  # Terraform own the Flannel manifest lets us render the subnet from
+  # `var.pod_cidr` and escape 10.244 entirely.
+  cni = "false"
+
   service_cluster_ip_range = var.service_cidr
 
   # Addons are kept minimal - Traefik and cert-manager are installed via Helm
   addons = var.addons
 
-  # Networking: using CGNAT range (100.64.0.0/10) to avoid conflicts with real networks
   extra_config = toset([
-    # kubeadm.pod-network-cidr sets node.spec.podCIDR on the node object, but the
-    # minikube Flannel addon hardcodes "Network": "10.244.0.0/16" in its ConfigMap
-    # and does not read this value. pod_cidr MUST stay at "10.244.0.0/16" or
-    # Flannel crashes with "subnet does not contain node PodCIDR" and new pods
-    # are stuck in ContainerCreating. The k3s sibling does not have this
-    # limitation because k3s' flannel reads CLI flags directly.
+    # Pass the pod CIDR to kubeadm so the node object gets the right
+    # `node.spec.podCIDR`. Our own Flannel manifest (flannel.tf) reads the
+    # same value and renders `net-conf.json` accordingly, so the two
+    # consumers of `var.pod_cidr` agree by construction.
     "kubeadm.pod-network-cidr=${var.pod_cidr}",
     "kubeadm.service-cluster-ip-range=${var.service_cidr}",
     "kubeadm.cluster-dns=${var.dns_ip}",
@@ -54,7 +60,6 @@ resource "minikube_cluster" "this" {
       addons,
       kubernetes_version,
       extra_config,
-      cni,
       driver,
       nodes,
       cpus,
